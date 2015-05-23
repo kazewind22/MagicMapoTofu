@@ -1,0 +1,12 @@
+http://ro.ecu.edu.au/cgi/viewcontent.cgi?article=5969&context=ecuworks
+
+This is a paper in year 2011.
+It seems that Monte Carlo is beated by Mini-Max search in this papaer.
+In the paper, the author constrain the Monte Carlo to simulate 10000 games in a ply,
+while the mini-max search is simply a 4-layer min-max(he doesn't mention the evalution function at all).
+It is quite astonishing that the Monte Carlo algorithm he tuned is defeated by the naive 4-layer mini-max algorithm(45:53).
+
+Not mention that if our Monte Carlo can simulate 10000 in the time limit or not, if its mini-max search had been applied
+prunning, move choosing, better evalution function and deeper layer search.
+
+It's time to consider not to put too much time on Monte Carlo?
