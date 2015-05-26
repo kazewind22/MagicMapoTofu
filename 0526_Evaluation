@@ -1,0 +1,24 @@
+1. Position
+ex corner with highest score
+
+2. Moility
+
+Reference:
+http://www.othello.nu/file/othello-by-bryan-rose.pdf
+http://blog.sina.com.cn/s/blog_45cb1ae50101069b.html
+
+CraftEngine:
+http://code.google.com/p/craft-othello/wiki/IntroductionChineseVersion
+
+
+A pattern classification approach to evaluation function learning
+http://repository.cmu.edu/cgi/viewcontent.cgi?article=2622&context=compsci
+
+BILL
+    The development of a world class Othello program
+    http://www.sciencedirect.com/science/article/pii/000437029090068B
+
+IAGO
+    A World-Championship-level Othello program
+    Artificial Intelligence, 19 (1982), pp. 279–320
+    http://www.sciencedirect.com/science/article/pii/0004370282900030/pdf?md5=884d7e559082acb0ad2006780027bf53&pid=1-s2.0-0004370282900030-main.pdf
