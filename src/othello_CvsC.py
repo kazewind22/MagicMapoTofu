@@ -146,15 +146,16 @@ def getComputer1Move(board, computerTile):
 
 def getComputer2Move(board, computerTile):
     possibleMoves = getValidMoves(board, computerTile)
-
+    for move in possibleMoves:
+        if(isOnCorner(move[0],move[1])):
+            return move
+    random.shuffle(possibleMoves)
     return possibleMoves[0]
 def isGameOver(board):
-    if getValidMoves(mainBoard, computerTile) == [] and getValidMoves(mainBoard, playerTile) == []:
-        return True
-    for x in range(8):
-        for y in range(8):
-            if board[x][y] == 'none':
-                return False
+    if getValidMoves(mainBoard, computerTile) != []:
+        return False
+    if getValidMoves(mainBoard, playerTile) != []:
+        return False
     return True
 
 
