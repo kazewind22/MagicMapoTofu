@@ -82,6 +82,7 @@ def isValidMove(board, tile, xstart, ystart):
 def isOnBoard(x, y):
     return x >= 0 and x <= 7 and y >= 0 and y <=7
 
+
 def getValidMoves(board, tile):
     validMoves = []
 
@@ -104,13 +105,6 @@ def getScoreOfBoard(board):
     return {'black':xscore, 'white':oscore}
 
 
-def randomGoFirst():
-    if random.randint(0, 1) == 0:
-        return 'computer'
-    else:
-        return 'player'
-
-
 def makeMove(board, tile, xstart, ystart):
     tilesToFlip = isValidMove(board, tile, xstart, ystart)
 
@@ -124,6 +118,7 @@ def makeMove(board, tile, xstart, ystart):
         board[x][y] = tile
     return True
 
+
 def getBoardCopy(board):
     dupeBoard = getNewBoard()
 
@@ -133,23 +128,33 @@ def getBoardCopy(board):
 
     return dupeBoard
 
+
 def isOnCorner(x, y):
-    return (x == 0 and y == 0) or (x == 7 and y == 0) or (x == 0 and y == 7) or (x == 7 and y == 7)
+    return (x == 0 or x == 7) and (y == 0 or y == 7)
+
+
+def isGameOver(board):
+    if getValidMoves(mainBoard, 'black') != []:
+        return False
+    if getValidMoves(mainBoard, 'white') != []:
+        return False
+    return True
 
 #where we need to work on.
-def getComputerMove(board, computerTile):
+def getComputer1Move(board, computerTile):
     possibleMoves = getValidMoves(board, computerTile)
 
     random.shuffle(possibleMoves)
-
     return possibleMoves[0]
 
-def isGameOver(board):
-    for x in range(8):
-        for y in range(8):
-            if board[x][y] == 'none':
-                return False
-    return True
+
+def getComputer2Move(board, computerTile):
+    possibleMoves = getValidMoves(board, computerTile)
+    for move in possibleMoves:
+        if(isOnCorner(move[0],move[1])):
+            return move
+    random.shuffle(possibleMoves)
+    return possibleMoves[0]
 
 
 pygame.init()
@@ -163,52 +168,50 @@ whiteImage = pygame.image.load('white.png')
 whiteRect = whiteImage.get_rect()
 
 basicFont = pygame.font.SysFont(None, 48)
-gameoverStr = 'Game Over Score '
-
-mainBoard = getNewBoard()
-resetBoard(mainBoard)
-
-#random choosing who goes first.
-#turn = randomGoFirst()
-turn = 'player'
-
-if turn == 'player':
-    playerTile = 'black'
-    computerTile = 'white'
-else:
-    playerTile = 'white'
-    computerTile = 'black'
 
 windowSurface = pygame.display.set_mode((boardRect.width, boardRect.height))
 pygame.display.set_caption('Othello')
 
-
+mainBoard = getNewBoard()
+resetBoard(mainBoard)
+turn = 0
 gameOver = False
-
+#'H'=human, 'C0'=random, 'C1'=corner first
+PLAYEROPT = ['H','C1']
+HumanMoveIsGet = False
+TILEOPT = ['black','white']
 
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
             terminate()
-        if gameOver == False and turn == 'player' and event.type == MOUSEBUTTONDOWN and event.button == 1:
-            x, y = pygame.mouse.get_pos()
-            col = int((x-BOARDX)/CELLWIDTH)
-            row = int((y-BOARDY)/CELLHEIGHT)
-            print col, row
-            if makeMove(mainBoard, playerTile, col, row) == True:
-                if getValidMoves(mainBoard, computerTile) != []:
-                    turn = 'computer'
-
+        elif event.type == MOUSEBUTTONDOWN and event.button == 1:
+            if gameOver == True:
+                terminate()
+            elif gameOver == False and PLAYEROPT[turn] == 'H':
+                x, y = pygame.mouse.get_pos()
+                col = int((x-BOARDX)/CELLWIDTH)
+                row = int((y-BOARDY)/CELLHEIGHT)
+                HumanMoveIsGet = True
     windowSurface.fill(BACKGROUNDCOLOR)
     windowSurface.blit(boardImage, boardRect, boardRect)
-
-    if (gameOver == False and turn == 'computer'):
-        x, y = getComputerMove(mainBoard, computerTile)
-        makeMove(mainBoard, computerTile, x, y)
-        savex, savey = x, y
-
-        if getValidMoves(mainBoard, playerTile) != []:
-            turn = 'player'
+    if ( gameOver == False ):
+        if(PLAYEROPT[turn] == 'C0'):
+            x, y = getComputer1Move(mainBoard, TILEOPT[turn])
+        elif(PLAYEROPT[turn] == 'C1'):
+            x, y = getComputer2Move(mainBoard, TILEOPT[turn])
+        elif(HumanMoveIsGet == True):
+            x, y = col, row
+        else:
+            x, y = 514, 514
+        if(makeMove(mainBoard, TILEOPT[turn], x, y) == True):
+            if getValidMoves(mainBoard, TILEOPT[(turn+1)%2]) != []:
+                turn = (turn+1)%2
+        elif(PLAYEROPT[turn] == 'C'):
+            print 'bad AI'
+            gameOver = True
+        else:
+            HumanMoveIsGet = False
 
     windowSurface.fill(BACKGROUNDCOLOR)
     windowSurface.blit(boardImage, boardRect, boardRect)
@@ -221,17 +224,18 @@ while True:
             elif mainBoard[x][y] == 'white':
                 windowSurface.blit(whiteImage, rectDst, whiteRect)
 
-    if isGameOver(mainBoard):
-        scorePlayer = getScoreOfBoard(mainBoard)[playerTile]
-        scoreComputer = getScoreOfBoard(mainBoard)[computerTile]
-        outputStr = gameoverStr + str(scorePlayer) + ":" + str(scoreComputer)
+    if gameOver == True or isGameOver(mainBoard):
+        score01 = getScoreOfBoard(mainBoard)['black']
+        score02 = getScoreOfBoard(mainBoard)['white']
+        outputStr = 'Game Over Score ' + str(score01) + ":" + str(score02)
         text = basicFont.render(outputStr, True, BLACK, BLUE)
         textRect = text.get_rect()
         textRect.centerx = windowSurface.get_rect().centerx
         textRect.centery = windowSurface.get_rect().centery
         windowSurface.blit(text, textRect)
+        gameOver = True
     
     pygame.display.update()
     mainClock.tick(FPS)
 
-raw_input("")
+
