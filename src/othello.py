@@ -132,6 +132,12 @@ def getBoardCopy(board):
 def isOnCorner(x, y):
     return (x == 0 or x == 7) and (y == 0 or y == 7)
 
+def isOnGoodSide(x, y):
+    if(x == 0 or x == 7):
+        return y != 1 and y != 6
+    if(y == 0 or y == 7):
+        return x != 1 and x != 6
+    return False
 
 def isGameOver(board):
     if getValidMoves(mainBoard, 'black') != []:
@@ -150,12 +156,22 @@ def getComputer1Move(board, computerTile):
 
 def getComputer2Move(board, computerTile):
     possibleMoves = getValidMoves(board, computerTile)
+    random.shuffle(possibleMoves)
     for move in possibleMoves:
         if(isOnCorner(move[0],move[1])):
             return move
-    random.shuffle(possibleMoves)
     return possibleMoves[0]
 
+def getComputer3Move(board, computerTile):
+    possibleMoves = getValidMoves(board, computerTile)
+    random.shuffle(possibleMoves)
+    for move in possibleMoves:
+        if(isOnCorner(move[0],move[1])):
+            return move
+    for move in possibleMoves:
+        if(isOnGoodSide(move[0],move[1])):
+            return move
+    return possibleMoves[0]
 def getComputerbadMove(board, computerTile):
     return 123, 456
 
@@ -179,8 +195,12 @@ mainBoard = getNewBoard()
 resetBoard(mainBoard)
 turn = 0
 gameOver = False
-#'H'=human, 'C0'=random, 'C1'=corner first , 'test'
-PLAYEROPT = ['H','C1']
+#'H'    = human
+#'C1'   = random
+#'C2'   = corner first
+#'C3'   = corner first side second
+#'test' = invalid move
+PLAYEROPT = ['C2','C3']
 HumanMoveIsGet = False
 TILEOPT = ['black','white']
 
@@ -199,10 +219,12 @@ while True:
     windowSurface.fill(BACKGROUNDCOLOR)
     windowSurface.blit(boardImage, boardRect, boardRect)
     if ( gameOver == False ):
-        if(PLAYEROPT[turn] == 'C0'):
+        if(PLAYEROPT[turn] == 'C1'):
             x, y = getComputer1Move(mainBoard, TILEOPT[turn])
-        elif(PLAYEROPT[turn] == 'C1'):
+        elif(PLAYEROPT[turn] == 'C2'):
             x, y = getComputer2Move(mainBoard, TILEOPT[turn])
+        elif(PLAYEROPT[turn] == 'C3'):
+            x, y = getComputer3Move(mainBoard, TILEOPT[turn])
         elif(PLAYEROPT[turn] == 'test'):
             x, y = getComputerbadMove(mainBoard, TILEOPT[turn])
         elif(PLAYEROPT[turn] == 'H' and HumanMoveIsGet == True):
