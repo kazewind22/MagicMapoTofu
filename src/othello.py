@@ -12,41 +12,43 @@ PIECEHEIGHT = 47
 BOARDX = 35
 BOARDY = 35
 FPS = 40
+_BLACK_=0
+_WHITE_=1
+_NONE_=2
 
 def terminate():
     pygame.quit()
     sys.exit()
-
 #Game starting
 def resetBoard(board):
     for x in range(8):
         for y in range(8):
-            board[x][y] = 'none'
+            board[x][y] = _NONE_
 
-    board[3][3] = 'black'
-    board[3][4] = 'white'
-    board[4][3] = 'white'
-    board[4][4] = 'black'
+    board[3][3] = _BLACK_
+    board[3][4] = _WHITE_
+    board[4][3] = _WHITE_
+    board[4][4] = _BLACK_
 
 #build new board ([][])
 def getNewBoard():
     board = []
     for i in range(8):
-        board.append(['none'] * 8)
+        board.append([_NONE_] * 8)
 
     return board
 
 
 def isValidMove(board, tile, xstart, ystart):
-    if not isOnBoard(xstart, ystart) or board[xstart][ystart] != 'none':
+    if not isOnBoard(xstart, ystart) or board[xstart][ystart] != _NONE_:
         return False
 
     board[xstart][ystart] = tile
 
-    if tile == 'black':
-        otherTile = 'white'
+    if tile == _BLACK_:
+        otherTile = _WHITE_
     else:
-        otherTile = 'black'
+        otherTile = _BLACK_
 
     tilesToFlip = []
     for xdirection, ydirection in [ [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1] ]:
@@ -73,7 +75,7 @@ def isValidMove(board, tile, xstart, ystart):
                         break
                     tilesToFlip.append([x, y])
 
-    board[xstart][ystart] = 'none' # restore the empty space
+    board[xstart][ystart] = _NONE_ # restore the empty space
 
     if len(tilesToFlip) == 0:   # If no tiles were flipped, this is not a valid move.
         return False
@@ -95,15 +97,11 @@ def getValidMoves(board, tile):
 
 
 def getScoreOfBoard(board):
-    xscore = 0
-    oscore = 0
+    cnt=[0,0,0]
     for x in range(8):
         for y in range(8):
-            if board[x][y] == 'black':
-                xscore += 1
-            if board[x][y] == 'white':
-                oscore += 1
-    return {'black':xscore, 'white':oscore}
+            cnt[board[x][y]]+=1
+    return (cnt[0], cnt[1])
 
 
 def makeMove(board, tile, xstart, ystart):
@@ -141,30 +139,30 @@ def isOnGoodSide(x, y):
     return False
 
 def isGameOver(board):
-    if getValidMoves(mainBoard, 'black') != []:
+    if getValidMoves(mainBoard, _BLACK_) != []:
         return False
-    if getValidMoves(mainBoard, 'white') != []:
+    if getValidMoves(mainBoard, _WHITE_) != []:
         return False
     return True
 
     
 def opponentTile(myTile):
-    if myTile == 'black':
-        return 'white'
-    if myTile == 'white':
-        return 'black'
-    return 'none'
+    if myTile >= 2:
+        return _NONE_
+    return myTile^1
 
 def getBoardId(board):
-    ID = 0
+    ID1 = 0
+    ID2 = 0
+    ID3 = 0
+    ID4 = 0
     for x in range(8):
         for y in range(8):
-            ID = ID*4
-            if board[x][y]=='black':
-                ID+=1
-            if board[x][y]=='white':
-                ID+=2
-    return ID
+            ID1+=board[x][y]<<((8*x+y)*2)
+            ID2+=board[x][y]<<((8*y+x)*2)
+            ID3+=board[x][y]<<((8*(7-x)+y)*2)
+            ID4+=board[x][y]<<((8*(7-y)+x)*2)
+    return min(min(ID1,ID2),min(ID3,ID4))
 
 #where we need to work on.
 def getComputer1Move(board, computerTile):
@@ -228,11 +226,11 @@ def dfs_4_(board):
     BID = getBoardId(board)
     if BID in mp:
         return mp[BID]
-    myMoves = getValidMoves(board, 'black')
-    opMoves = getValidMoves(board, 'white')
+    myMoves = getValidMoves(board, _BLACK_)
+    opMoves = getValidMoves(board, _WHITE_)
     if len(myMoves) + len(opMoves) == 0:
         score = getScoreOfBoard(board)
-        mp[BID]=(score['black']-score['white'],(0,0))
+        mp[BID]=(score[_BLACK_]-score[_WHITE_],(0,0))
         return mp[BID]
     if len(myMoves) == 0:
         nboard = getBoardCopy(board)
@@ -242,7 +240,7 @@ def dfs_4_(board):
     tans=(65,(0,0))
     for move in myMoves:
         nboard = getBoardCopy(board)
-        if makeMove(nboard, 'black', move[0], move[1]) == False:
+        if makeMove(nboard, _BLACK_, move[0], move[1]) == False:
             print 'bad program'
             break
         flip(nboard)
@@ -254,7 +252,7 @@ def dfs_4_(board):
 
 def dfs_4(board,myTile):
     nboard = getBoardCopy(board)
-    if myTile == 'white':
+    if myTile == _WHITE_:
         flip(nboard)
     return dfs_4_(nboard)
 
@@ -262,7 +260,7 @@ def getComputer4Move(board, myTile):
     cnt = 0
     for x in range(8):
         for y in range(8):
-            cnt = cnt + ( board[x][y] == 'none' )
+            cnt = cnt + ( board[x][y] == _NONE_ )
     if cnt<=8:
         res = dfs_4(board,myTile)
         ##
@@ -306,10 +304,9 @@ gameOver = False
 #'C4'   = MIX of C3 and C5 + end game diff maximized
 #'C5'   = corner first side second big diff third(one level)
 #'test' = invalid move
-PLAYEROPT = ['H','C4']
+PLAYEROPT = ['C3','C4']
 PLAYERWINS = [0,0]
 HumanMoveIsGet = False
-TILEOPT = ['black','white']
 ShowFlag = True
 
 
@@ -329,25 +326,25 @@ while True:
                 HumanMoveIsGet = True
     if ( gameOver == False ):
         if(PLAYEROPT[turn] == 'C1'):
-            x, y = getComputer1Move(mainBoard, TILEOPT[turn])
+            x, y = getComputer1Move(mainBoard, turn)
         elif(PLAYEROPT[turn] == 'C2'):
-            x, y = getComputer2Move(mainBoard, TILEOPT[turn])
+            x, y = getComputer2Move(mainBoard, turn)
         elif(PLAYEROPT[turn] == 'C3'):
-            x, y = getComputer3Move(mainBoard, TILEOPT[turn])
+            x, y = getComputer3Move(mainBoard, turn)
         elif(PLAYEROPT[turn] == 'C4'):
-            x, y = getComputer4Move(mainBoard, TILEOPT[turn])
+            x, y = getComputer4Move(mainBoard, turn)
         elif(PLAYEROPT[turn] == 'C5'):
-            x, y = getComputer5Move(mainBoard, TILEOPT[turn])
+            x, y = getComputer5Move(mainBoard, turn)
         elif(PLAYEROPT[turn] == 'test'):
-            x, y = getComputerbadMove(mainBoard, TILEOPT[turn])
+            x, y = getComputerbadMove(mainBoard, turn)
         elif(PLAYEROPT[turn] == 'H' and HumanMoveIsGet == True):
             x, y = col, row
         else:
             x, y = 514, 514
         #print x, y ,turn
-        if(makeMove(mainBoard, TILEOPT[turn], x, y) == True):
-            if getValidMoves(mainBoard, TILEOPT[(turn+1)%2]) != []:
-                turn = (turn+1)%2
+        if(makeMove(mainBoard, turn, x, y) == True):
+            if getValidMoves(mainBoard, turn^1) != []:
+                turn = turn^1
         elif(PLAYEROPT[turn] != 'H'):
             print 'bad AI ' + PLAYEROPT[turn] + ' made a invalid move!'
             gameOver = True
@@ -357,8 +354,8 @@ while True:
         if gameOver == True or isGameOver(mainBoard):
             gameOver == True
             res = getScoreOfBoard(mainBoard)
-            PLAYERWINS[res['black']<res['white']]+=1
-            #print PLAYEROPT[res['black']<res['white']] , 'win.'
+            PLAYERWINS[res[_BLACK_]<res[_WHITE_]]+=1
+            #print PLAYEROPT[res[_BLACK_]<res[_WHITE_]] , 'win.'
             print PLAYERWINS[0], PLAYERWINS[1]
             resetBoard(mainBoard)
             gameOver == False
@@ -369,14 +366,13 @@ while True:
     for x in range(8):
         for y in range(8):
             rectDst = pygame.Rect(BOARDX+x*CELLWIDTH+2, BOARDY+y*CELLHEIGHT+2, PIECEWIDTH, PIECEHEIGHT)
-            if mainBoard[x][y] == 'black':
+            if mainBoard[x][y] == _BLACK_:
                 windowSurface.blit(blackImage, rectDst, blackRect)
-            elif mainBoard[x][y] == 'white':
+            elif mainBoard[x][y] == _WHITE_:
                 windowSurface.blit(whiteImage, rectDst, whiteRect)
 
     if gameOver == True or isGameOver(mainBoard):
-        score01 = getScoreOfBoard(mainBoard)['black']
-        score02 = getScoreOfBoard(mainBoard)['white']
+        score01, score02 = getScoreOfBoard(mainBoard)
         outputStr = 'Game Over Score ' + str(score01) + ":" + str(score02)
         text = basicFont.render(outputStr, True, BLACK, BLUE)
         textRect = text.get_rect()
