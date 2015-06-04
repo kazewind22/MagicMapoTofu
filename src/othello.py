@@ -1,4 +1,5 @@
 import pygame, sys, random
+import copy
 from pygame.locals import *
 
 BACKGROUNDCOLOR = (255, 255, 255)
@@ -146,6 +147,25 @@ def isGameOver(board):
         return False
     return True
 
+    
+def opponentTile(myTile):
+    if myTile == 'black':
+        return 'white'
+    if myTile == 'white':
+        return 'black'
+    return 'none'
+
+def getBoardId(board):
+    ID = 0
+    for x in range(8):
+        for y in range(8):
+            ID = ID*4
+            if board[x][y]=='black':
+                ID+=1
+            if board[x][y]=='white':
+                ID+=2
+    return ID
+
 #where we need to work on.
 def getComputer1Move(board, computerTile):
     possibleMoves = getValidMoves(board, computerTile)
@@ -162,6 +182,7 @@ def getComputer2Move(board, computerTile):
             return move
     return possibleMoves[0]
 
+
 def getComputer3Move(board, computerTile):
     possibleMoves = getValidMoves(board, computerTile)
     random.shuffle(possibleMoves)
@@ -172,6 +193,89 @@ def getComputer3Move(board, computerTile):
         if(isOnGoodSide(move[0],move[1])):
             return move
     return possibleMoves[0]
+
+
+def getComputer5Move(board, myTile):
+    myMoves = getValidMoves(board, myTile)
+    random.shuffle(myMoves)
+    for move in myMoves:
+        if(isOnCorner(move[0],move[1])):
+            return move
+    for move in myMoves:
+        if(isOnGoodSide(move[0],move[1])):
+            return move
+    opTile=opponentTile(myTile)
+    A=[]
+    for move in myMoves:
+        nboard = getBoardCopy(board)
+        if makeMove(nboard, myTile, move[0], move[1]) == False:
+            print 'bad program'
+            break
+        score = getScoreOfBoard(nboard)
+        A.append((score[opTile]-score[myTile],move))
+    A.sort()
+    return A[0][1]
+
+def flip(board):
+    for x in range(8):
+        for y in range(8):
+            board[x][y] = opponentTile(board[x][y])
+    return 1
+
+mp={}
+    
+def dfs_4_(board):
+    BID = getBoardId(board)
+    if BID in mp:
+        return mp[BID]
+    myMoves = getValidMoves(board, 'black')
+    opMoves = getValidMoves(board, 'white')
+    if len(myMoves) + len(opMoves) == 0:
+        score = getScoreOfBoard(board)
+        mp[BID]=(score['black']-score['white'],(0,0))
+        return mp[BID]
+    if len(myMoves) == 0:
+        nboard = getBoardCopy(board)
+        flip(nboard)
+        mp[BID]=(-dfs_4_(nboard)[0],(0,0))
+        return mp[BID]
+    tans=(65,(0,0))
+    for move in myMoves:
+        nboard = getBoardCopy(board)
+        if makeMove(nboard, 'black', move[0], move[1]) == False:
+            print 'bad program'
+            break
+        flip(nboard)
+        res = dfs_4_(nboard)
+        if res[0] < tans[0]:
+            tans =(res[0],move)
+    mp[BID]=(-tans[0],tans[1])
+    return mp[BID]
+
+def dfs_4(board,myTile):
+    nboard = getBoardCopy(board)
+    if myTile == 'white':
+        flip(nboard)
+    return dfs_4_(nboard)
+
+def getComputer4Move(board, myTile):
+    cnt = 0
+    for x in range(8):
+        for y in range(8):
+            cnt = cnt + ( board[x][y] == 'none' )
+    if cnt<=8:
+        res = dfs_4(board,myTile)
+        ##
+        #if res[0] > 0:
+        #    print 'I am ' + myTile + ', I will win.'
+        #else:
+        #    print 'I am ' + myTile + ', I will lose.'
+        ##
+        return res[1]
+    if cnt<=12:
+        getComputer5Move(board, myTile)
+    return getComputer3Move(board, myTile)
+
 def getComputerbadMove(board, computerTile):
     return 123, 456
 
@@ -199,10 +303,15 @@ gameOver = False
 #'C1'   = random
 #'C2'   = corner first
 #'C3'   = corner first side second
+#'C4'   = MIX of C3 and C5 + end game diff maximized
+#'C5'   = corner first side second big diff third(one level)
 #'test' = invalid move
-PLAYEROPT = ['C2','C3']
+PLAYEROPT = ['C4','C3']
+PLAYERWINS = [0,0]
 HumanMoveIsGet = False
 TILEOPT = ['black','white']
+ShowFlag = True
+
 
 while True:
     for event in pygame.event.get():
@@ -210,14 +319,14 @@ while True:
             terminate()
         elif event.type == MOUSEBUTTONDOWN and event.button == 1:
             if gameOver == True:
-                terminate()
+                resetBoard(mainBoard)
+                gameOver = False
+                turn = 0
             elif gameOver == False and PLAYEROPT[turn] == 'H':
                 x, y = pygame.mouse.get_pos()
                 col = int((x-BOARDX)/CELLWIDTH)
                 row = int((y-BOARDY)/CELLHEIGHT)
                 HumanMoveIsGet = True
-    windowSurface.fill(BACKGROUNDCOLOR)
-    windowSurface.blit(boardImage, boardRect, boardRect)
     if ( gameOver == False ):
         if(PLAYEROPT[turn] == 'C1'):
             x, y = getComputer1Move(mainBoard, TILEOPT[turn])
@@ -225,12 +334,17 @@ while True:
             x, y = getComputer2Move(mainBoard, TILEOPT[turn])
         elif(PLAYEROPT[turn] == 'C3'):
             x, y = getComputer3Move(mainBoard, TILEOPT[turn])
+        elif(PLAYEROPT[turn] == 'C4'):
+            x, y = getComputer4Move(mainBoard, TILEOPT[turn])
+        elif(PLAYEROPT[turn] == 'C5'):
+            x, y = getComputer5Move(mainBoard, TILEOPT[turn])
         elif(PLAYEROPT[turn] == 'test'):
             x, y = getComputerbadMove(mainBoard, TILEOPT[turn])
         elif(PLAYEROPT[turn] == 'H' and HumanMoveIsGet == True):
             x, y = col, row
         else:
             x, y = 514, 514
+        #print x, y ,turn
         if(makeMove(mainBoard, TILEOPT[turn], x, y) == True):
             if getValidMoves(mainBoard, TILEOPT[(turn+1)%2]) != []:
                 turn = (turn+1)%2
@@ -239,7 +353,16 @@ while True:
             gameOver = True
         else:
             HumanMoveIsGet = False
-
+    if( ShowFlag == False ):
+        if gameOver == True or isGameOver(mainBoard):
+            gameOver == True
+            res = getScoreOfBoard(mainBoard)
+            PLAYERWINS[res['black']<res['white']]+=1
+            #print PLAYEROPT[res['black']<res['white']] , 'win.'
+            print PLAYERWINS[0], PLAYERWINS[1]
+            resetBoard(mainBoard)
+            gameOver == False
+        continue
     windowSurface.fill(BACKGROUNDCOLOR)
     windowSurface.blit(boardImage, boardRect, boardRect)
     
