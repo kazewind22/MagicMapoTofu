@@ -52,28 +52,28 @@ def isValidMove(board, tile, xstart, ystart):
 
     tilesToFlip = []
     for xdirection, ydirection in [ [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1] ]:
-        x, y = xstart, ystart
+        x = xstart + xdirection
+        y = ystart + ydirection
+        if isOnBoard(x, y) == False or board[x][y] != otherTile:
+            continue
         x += xdirection
         y += ydirection
-        if isOnBoard(x, y) and board[x][y] == otherTile:
+        if not isOnBoard(x, y):
+            continue
+        while board[x][y] == otherTile:
             x += xdirection
             y += ydirection
             if not isOnBoard(x, y):
-                continue
-            while board[x][y] == otherTile:
-                x += xdirection
-                y += ydirection
-                if not isOnBoard(x, y):
+                break
+        if not isOnBoard(x, y):
+            continue
+        if board[x][y] == tile:
+            while True:
+                x -= xdirection
+                y -= ydirection
+                if x == xstart and y == ystart:
                     break
-            if not isOnBoard(x, y):
-                continue
-            if board[x][y] == tile:
-                while True:
-                    x -= xdirection
-                    y -= ydirection
-                    if x == xstart and y == ystart:
-                        break
-                    tilesToFlip.append([x, y])
+                tilesToFlip.append([x, y])
 
     board[xstart][ystart] = _NONE_ # restore the empty space
 
@@ -94,6 +94,17 @@ def getValidMoves(board, tile):
             if isValidMove(board, tile, x, y) != False:
                 validMoves.append([x, y])
     return validMoves
+
+
+def getBothValidMoves(board):
+    AvalidMoves = []
+    BvalidMoves = []
+    for xy in range(64):
+        if isValidMove(board, _BLACK_, xy>>3, xy&7) != False:
+            AvalidMoves.append([xy>>3, xy&7])
+        if isValidMove(board, _WHITE_, xy>>3, xy&7) != False:
+            BvalidMoves.append([xy>>3, xy&7])
+    return AvalidMoves, BvalidMoves
 
 
 def getScoreOfBoard(board):
@@ -128,10 +139,14 @@ def getBoardCopy(board):
     return dupeBoard
 
 
-def isOnCorner(x, y):
+def isOnCorner(xy):
+    x=xy[0]
+    y=xy[1]
     return (x == 0 or x == 7) and (y == 0 or y == 7)
 
-def isOnGoodSide(x, y):
+def isOnGoodSide(xy):
+    x=xy[0]
+    y=xy[1]
     if(x == 0 or x == 7):
         return y != 1 and y != 6
     if(y == 0 or y == 7):
@@ -156,13 +171,12 @@ def getBoardId(board):
     ID2 = 0
     ID3 = 0
     ID4 = 0
-    for x in range(8):
-        for y in range(8):
-            ID1+=board[x][y]<<((8*x+y)*2)
-            ID2+=board[x][y]<<((8*y+x)*2)
-            ID3+=board[x][y]<<((8*(7-x)+y)*2)
-            ID4+=board[x][y]<<((8*(7-y)+x)*2)
-    return min(min(ID1,ID2),min(ID3,ID4))
+    for xy in range(64):
+        ID1+=board[xy>>3][xy&7]<<((xy^ 0)*2)
+        ID2+=board[xy>>3][xy&7]<<((xy^ 7)*2)
+        ID3+=board[xy>>3][xy&7]<<((xy^56)*2)
+        ID4+=board[xy>>3][xy&7]<<((xy^63)*2)
+    return min(ID1,ID2,ID3,ID4)
 
 #where we need to work on.
 def getComputer1Move(board, computerTile):
@@ -176,7 +190,7 @@ def getComputer2Move(board, computerTile):
     possibleMoves = getValidMoves(board, computerTile)
     random.shuffle(possibleMoves)
     for move in possibleMoves:
-        if(isOnCorner(move[0],move[1])):
+        if(isOnCorner(move)):
             return move
     return possibleMoves[0]
 
@@ -185,10 +199,10 @@ def getComputer3Move(board, computerTile):
     possibleMoves = getValidMoves(board, computerTile)
     random.shuffle(possibleMoves)
     for move in possibleMoves:
-        if(isOnCorner(move[0],move[1])):
+        if(isOnCorner(move)):
             return move
     for move in possibleMoves:
-        if(isOnGoodSide(move[0],move[1])):
+        if(isOnGoodSide(move)):
             return move
     return possibleMoves[0]
 
@@ -197,10 +211,10 @@ def getComputer5Move(board, myTile):
     myMoves = getValidMoves(board, myTile)
     random.shuffle(myMoves)
     for move in myMoves:
-        if(isOnCorner(move[0],move[1])):
+        if(isOnCorner(move)):
             return move
     for move in myMoves:
-        if(isOnGoodSide(move[0],move[1])):
+        if(isOnGoodSide(move)):
             return move
     opTile=opponentTile(myTile)
     A=[]
@@ -220,35 +234,32 @@ def flip(board):
             board[x][y] = opponentTile(board[x][y])
     return 1
 
-mp={}
     
 def dfs_4_(board):
-    BID = getBoardId(board)
-    if BID in mp:
-        return mp[BID]
-    myMoves = getValidMoves(board, _BLACK_)
-    opMoves = getValidMoves(board, _WHITE_)
+    myMoves, opMoves = getBothValidMoves(board)
     if len(myMoves) + len(opMoves) == 0:
         score = getScoreOfBoard(board)
-        mp[BID]=(score[_BLACK_]-score[_WHITE_],(0,0))
-        return mp[BID]
-    if len(myMoves) == 0:
+        ans = (score[_BLACK_]-score[_WHITE_],(0,0))
+    elif len(myMoves) == 0:
         nboard = getBoardCopy(board)
         flip(nboard)
-        mp[BID]=(-dfs_4_(nboard)[0],(0,0))
-        return mp[BID]
-    tans=(65,(0,0))
-    for move in myMoves:
-        nboard = getBoardCopy(board)
-        if makeMove(nboard, _BLACK_, move[0], move[1]) == False:
-            print 'bad program'
-            break
-        flip(nboard)
-        res = dfs_4_(nboard)
-        if res[0] < tans[0]:
-            tans =(res[0],move)
-    mp[BID]=(-tans[0],tans[1])
-    return mp[BID]
+        ans = (-dfs_4_(nboard)[0],(0,0))
+    else:
+        tans=(66,(0,0))
+        for move in myMoves:
+            nboard = getBoardCopy(board)
+            if makeMove(nboard, _BLACK_, move[0], move[1]) == False:
+                print 'bad program'
+                break
+            flip(nboard)
+            res = dfs_4_(nboard)
+            if res[0] < tans[0]:
+                tans = (res[0],move)
+                #find win cut
+                if tans[0] < 0 :
+                    break
+        ans = (-tans[0],tans[1])
+    return ans
 
 def dfs_4(board,myTile):
     nboard = getBoardCopy(board)
@@ -258,24 +269,71 @@ def dfs_4(board,myTile):
 
 def getComputer4Move(board, myTile):
     cnt = 0
-    for x in range(8):
-        for y in range(8):
-            cnt = cnt + ( board[x][y] == _NONE_ )
+    for xy in range(64):
+        cnt+= ( board[xy>>3][xy&7] == _NONE_ )
     if cnt<=8:
         res = dfs_4(board,myTile)
-        ##
-        #if res[0] > 0:
-        #    print 'I am ' + myTile + ', I will win.'
-        #else:
-        #    print 'I am ' + myTile + ', I will lose.'
-        ##
         return res[1]
     if cnt<=12:
         getComputer5Move(board, myTile)
     return getComputer3Move(board, myTile)
 
-def getComputerbadMove(board, computerTile):
-    return 123, 456
+
+def dfs_6(board, myTile, depth):
+    if depth>=10:
+        print 'dfs_6 too deep'
+        return (-7122)
+    opTile = myTile^1
+    if myTile == _BLACK_:
+        myMoves, opMoves = getBothValidMoves(board)
+    else:
+        opMoves, myMoves = getBothValidMoves(board)
+    if len(myMoves) + len(opMoves) == 0 or depth == 0:
+        tmp = getScoreOfBoard(board)
+        score = tmp[myTile]-tmp[opTile]
+        for x,y in [(0,0),(0,7),(7,0),(7,7)]:
+            score+= (board[x][y]!=2)*(1-2*(board[x][y]^myTile))<<10
+            score-= (board[x][y]==2)*((board[x^0][y^1]==myTile) or (board[x^1][y^0]==myTile) or (board[x^1][y^1]==myTile))<<8
+        for x in [0,7]:
+            for y in [2,3,4,5]:
+                score+= (board[x][y]!=2)*(1-2*(board[x][y]^myTile))<<2
+                score+= (board[y][x]!=2)*(1-2*(board[y][x]^myTile))<<2
+        return (score,0)
+    elif len(myMoves) == 0:
+        return (-dfs_6(board, opTile, depth-1)[0],0)
+    tans=(2147483647,(0,0))
+    for move in myMoves:
+        tilesToFlip = isValidMove(board, myTile, move[0], move[1])
+        if tilesToFlip == False:
+            print 'bad program'
+            break
+        board[move[0]][move[1]] = myTile
+        for x ,y in tilesToFlip:
+            board[x][y]^=1
+        res = dfs_6(board, opTile, depth-1)
+        board[move[0]][move[1]] = _NONE_
+        for x ,y in tilesToFlip:
+            board[x][y]^=1
+        if res[0] < tans[0]:
+            tans =(res[0],move)
+    return (-tans[0],tans[1])
+
+
+def getComputer6Move(board, myTile):
+    cnt = 0
+    for xy in range(64):
+        cnt+= ( board[xy>>3][xy&7] == _NONE_ )
+    if cnt<=8:
+        res = dfs_4(board,myTile)
+        return res[1]
+    tmp = getComputer3Move(board, myTile)
+    if isOnCorner(tmp):
+        return tmp
+    if cnt<=64:
+        nboard = getBoardCopy(board)
+        res = dfs_6(nboard,myTile, 2)
+        return res[1]
+    return tmp
 
 
 pygame.init()
@@ -297,18 +355,16 @@ mainBoard = getNewBoard()
 resetBoard(mainBoard)
 turn = 0
 gameOver = False
+HumanMoveIsGet = False
+ShowFlag = True
 #'H'    = human
 #'C1'   = random
 #'C2'   = corner first
 #'C3'   = corner first side second
 #'C4'   = MIX of C3 and C5 + end game diff maximized
 #'C5'   = corner first side second big diff third(one level)
-#'test' = invalid move
-PLAYEROPT = ['C3','C4']
+PLAYEROPT = ['H','C6']
 PLAYERWINS = [0,0]
-HumanMoveIsGet = False
-ShowFlag = True
-
 
 while True:
     for event in pygame.event.get():
@@ -317,8 +373,10 @@ while True:
         elif event.type == MOUSEBUTTONDOWN and event.button == 1:
             if gameOver == True:
                 resetBoard(mainBoard)
-                gameOver = False
                 turn = 0
+                gameOver = False
+                HumanMoveIsGet = False
+                break
             elif gameOver == False and PLAYEROPT[turn] == 'H':
                 x, y = pygame.mouse.get_pos()
                 col = int((x-BOARDX)/CELLWIDTH)
@@ -335,8 +393,8 @@ while True:
             x, y = getComputer4Move(mainBoard, turn)
         elif(PLAYEROPT[turn] == 'C5'):
             x, y = getComputer5Move(mainBoard, turn)
-        elif(PLAYEROPT[turn] == 'test'):
-            x, y = getComputerbadMove(mainBoard, turn)
+        elif(PLAYEROPT[turn] == 'C6'):
+            x, y = getComputer6Move(mainBoard, turn)
         elif(PLAYEROPT[turn] == 'H' and HumanMoveIsGet == True):
             x, y = col, row
         else:
@@ -354,7 +412,10 @@ while True:
         if gameOver == True or isGameOver(mainBoard):
             gameOver == True
             res = getScoreOfBoard(mainBoard)
-            PLAYERWINS[res[_BLACK_]<res[_WHITE_]]+=1
+            if res[_BLACK_]<res[_WHITE_]:
+                PLAYERWINS[1]+=1
+            if res[_BLACK_]>res[_WHITE_]:
+                PLAYERWINS[0]+=1
             #print PLAYEROPT[res[_BLACK_]<res[_WHITE_]] , 'win.'
             print PLAYERWINS[0], PLAYERWINS[1]
             resetBoard(mainBoard)
