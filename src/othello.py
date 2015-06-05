@@ -301,7 +301,7 @@ def dfs_6(board, myTile, depth):
         return (score,0)
     elif len(myMoves) == 0:
         return (-dfs_6(board, opTile, depth-1)[0],0)
-    tans=(2147483647,(0,0))
+    tans=[(1<<30,0),(1<<30,0)]
     for move in myMoves:
         tilesToFlip = isValidMove(board, myTile, move[0], move[1])
         if tilesToFlip == False:
@@ -314,9 +314,16 @@ def dfs_6(board, myTile, depth):
         board[move[0]][move[1]] = _NONE_
         for x ,y in tilesToFlip:
             board[x][y]^=1
-        if res[0] < tans[0]:
-            tans =(res[0],move)
-    return (-tans[0],tans[1])
+        if res[0] < tans[0][0]:
+            tans[1] = tans[0]
+            tans[0] = (res[0],move)
+        elif res[0] < tans[1][0]:
+            tans[1] = (res[0],move)
+    if tans[1][0]>=tans[0][0]+1024:
+        r = 0
+    else:
+        r = random.randint(0, 1)
+    return (-tans[r][0],tans[r][1])
 
 
 def getComputer6Move(board, myTile):
