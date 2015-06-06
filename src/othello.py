@@ -67,7 +67,9 @@ while True:
     pygame.display.update()
 
     for event in pygame.event.get():
-        if event.type == QUIT or (event.type == MOUSEBUTTONDOWN and event.button == 1):
+        if event.type == QUIT:
+            terminate()
+        if gameOver == True and event.type == MOUSEBUTTONDOWN and event.button == 1:
             terminate()
     
     windowSurface.fill(BACKGROUNDCOLOR)
