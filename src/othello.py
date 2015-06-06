@@ -38,7 +38,7 @@ pygame.display.set_caption('Othello')
 gameOver = False
 
 player0 = SetPlayer('human')
-player1 = SetPlayer('mix')
+player1 = SetPlayer('human')
 player2 = SetPlayer('sauce')
 players = [player1, player2]
 playersTile = [BLACK, WHITE]

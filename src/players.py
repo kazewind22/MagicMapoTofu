@@ -158,6 +158,8 @@ class LiyianAI:
             for x,y in [(0,0),(0,7),(7,0),(7,7)]:
                 score+= (board[x][y]!=2)*(1-2*(board[x][y]^myTile))<<10
                 score-= (board[x][y]==2)*((board[x^0][y^1]==myTile) or (board[x^1][y^0]==myTile) or (board[x^1][y^1]==myTile))<<8
+                for dx,dy in [(0,1),(1,0),(1,1)]:
+                    score+= (board[x^dx][y^dy]^opTile)*(1-2*(board[x][y]^myTile))<<2
             for x in [0,7]:
                 for y in [2,3,4,5]:
                     score+= (board[x][y]!=2)*(1-2*(board[x][y]^myTile))<<2
@@ -183,7 +185,7 @@ class LiyianAI:
                 tans[0] = (res[0],move)
             elif res[0] < tans[1][0]:
                 tans[1] = (res[0],move)
-        if tans[1][0]>=tans[0][0]+1024:
+        if tans[1][0]>=tans[0][0]+8:
             r = 0
         else:
             r = random.randint(0, 1)
