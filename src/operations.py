@@ -1,9 +1,5 @@
 from constants import *
 
-def terminate():
-    pygame.quit()
-    sys.exit()
-
 def resetBoard(board):
     for x in range(8):
         for y in range(8):
@@ -107,8 +103,8 @@ def getBoardCopy(board):
     return dupeBoard
 
 def isGameOver(board):
-    if len(getValidMoves(board, WHITE))+len(getValidMoves(board, BLACK))==0:
-        return True
+    return len(getValidMoves(board, WHITE))+len(getValidMoves(board, BLACK))==0
+    return True
     for x in range(8):
         for y in range(8):
             if board[x][y] == NONE:

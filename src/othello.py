@@ -4,6 +4,10 @@ from constants import *
 from operations import *
 from players import *
 
+def terminate():
+    pygame.quit()
+    sys.exit()
+
 #where we need to work on.
 def getComputerMove(board, computerTile):
     possibleMoves = getValidMoves(board, computerTile)
@@ -33,8 +37,9 @@ pygame.display.set_caption('Othello')
 
 gameOver = False
 
-player1 = SetPlayer('human')
-player2 = SetPlayer('mix')
+player0 = SetPlayer('human')
+player1 = SetPlayer('mix')
+player2 = SetPlayer('sauce')
 players = [player1, player2]
 playersTile = [BLACK, WHITE]
 now = 0
@@ -42,7 +47,6 @@ now = 0
 while True:
     windowSurface.fill(BACKGROUNDCOLOR)
     windowSurface.blit(boardImage, boardRect, boardRect)
-    
     for x in range(8):
         for y in range(8):
             rectDst = pygame.Rect(BOARDX+x*CELLWIDTH+2, BOARDY+y*CELLHEIGHT+2, PIECEWIDTH, PIECEHEIGHT)
@@ -50,7 +54,8 @@ while True:
                 windowSurface.blit(blackImage, rectDst, blackRect)
             elif mainBoard[x][y] == WHITE:
                 windowSurface.blit(whiteImage, rectDst, whiteRect)
-    if isGameOver(mainBoard):
+    if gameOver == True or isGameOver(mainBoard):
+        gameOver = True
         scorePlayer = getScoreOfBoard(mainBoard)[playersTile[0]]
         scoreComputer = getScoreOfBoard(mainBoard)[playersTile[1]]
         outputStr = gameoverStr + str(scorePlayer) + ":" + str(scoreComputer)
@@ -59,11 +64,10 @@ while True:
         textRect.centerx = windowSurface.get_rect().centerx
         textRect.centery = windowSurface.get_rect().centery
         windowSurface.blit(text, textRect)
-        break
     pygame.display.update()
 
     for event in pygame.event.get():
-        if event.type == QUIT:
+        if event.type == QUIT or (event.type == MOUSEBUTTONDOWN and event.button == 1):
             terminate()
     
     windowSurface.fill(BACKGROUNDCOLOR)
@@ -71,8 +75,9 @@ while True:
 
     if (gameOver == False):
         x, y = players[now].getMove(mainBoard, playersTile[now])
-        makeMove(mainBoard, playersTile[now], x, y)
-
+        if makeMove(mainBoard, now, x, y) == False and players[now] != player0:
+            print 'bad AI ' + playersTile[now] + ' made a invalid move!'
+            gameOver = True
         if getValidMoves(mainBoard, playersTile[now^1]) != []:
             now = now^1
     
