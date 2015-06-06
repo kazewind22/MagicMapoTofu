@@ -122,9 +122,9 @@ def getBothValidMoves(board):
     AvalidMoves = []
     BvalidMoves = []
     for xy in range(64):
-        if isValidMove(board, _BLACK_, xy>>3, xy&7) != False:
+        if isValidMove(board, BLACK, xy>>3, xy&7) != False:
             AvalidMoves.append([xy>>3, xy&7])
-        if isValidMove(board, _WHITE_, xy>>3, xy&7) != False:
+        if isValidMove(board, WHITE, xy>>3, xy&7) != False:
             BvalidMoves.append([xy>>3, xy&7])
     return AvalidMoves, BvalidMoves
 
