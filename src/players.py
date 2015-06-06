@@ -58,7 +58,7 @@ class CornerSideAI:
                 return move
         return possibleMoves[0]
 
-class MinMaxOne:
+class MinMaxOneAI:
     def getMove(self, board, Tile):
         myMoves = getValidMoves(board, Tile)
         random.shuffle(myMoves)
@@ -91,7 +91,7 @@ class EndAllWithMinMaxAI:
                 flip(nboard)
             return self.dfs(nboard)[1]
         if cnt<=12:
-            solver = MinMaxOne() 
+            solver = MinMaxOneAI() 
         else:
             solver = CornerSideAI()
         return solver.getMove(board, Tile)
