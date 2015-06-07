@@ -1,4 +1,5 @@
 from constants import *
+from array import array
 
 def resetBoard(board):
     for x in range(8):
@@ -13,8 +14,7 @@ def resetBoard(board):
 def getNewBoard():
     board = []
     for i in range(8):
-        board.append([NONE] * 8)
-
+        board.append(array('i',[NONE] * 8))
     return board
 
 def isValidMove(board, tile, xstart, ystart):
@@ -115,14 +115,34 @@ def isOnBoard(x, y):
     return x >= 0 and x <= 7 and y >= 0 and y <=7
 
 def getBothValidMoves(board):
-    AvalidMoves = []
-    BvalidMoves = []
+    BMoves = []
+    WMoves = []
     for xy in range(64):
         if isValidMove(board, BLACK, xy>>3, xy&7) != False:
-            AvalidMoves.append([xy>>3, xy&7])
+            BMoves.append([xy>>3, xy&7])
         if isValidMove(board, WHITE, xy>>3, xy&7) != False:
-            BvalidMoves.append([xy>>3, xy&7])
-    return AvalidMoves, BvalidMoves
+            WMoves.append([xy>>3, xy&7])
+    return BMoves, WMoves
+
+gBVM_lg = array('i',[0]*(1<<16))
+for i in range(16):
+    gBVM_lg[1<<i] = i
+def getBothValidMoves_2(board, restnone):
+    global gBVM_2_lg
+    BMoves = []
+    WMoves = []
+    for k in range(4):
+        mask = restnone[k]
+        while mask!=0:
+            lowbit = mask - ( mask&(mask-1) )
+            xy = gBVM_lg[lowbit]
+            x, y = k*2 + (xy>>3), xy&7
+            mask-= lowbit
+            if isValidMove(board, BLACK, x, y) != False:
+                BMoves.append([x, y])
+            if isValidMove(board, WHITE, x, y) != False:
+                WMoves.append([x, y])
+    return BMoves, WMoves
 
 def isOnCorner(xy):
     x=xy[0]
@@ -142,9 +162,3 @@ def opponentTile(myTile):
     if myTile >= 2:
         return NONE
     return myTile^1
-
-def flip(board):
-    for x in range(8):
-        for y in range(8):
-            board[x][y] = opponentTile(board[x][y])
-    return 1

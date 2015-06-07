@@ -42,22 +42,33 @@ player1 = SetPlayer('human')
 player2 = SetPlayer('sauce')
 players = [player1, player2]
 playersTile = [BLACK, WHITE]
+playersWins = [0, 0]
+showUI = True
 now = 0
 
 while True:
-    windowSurface.fill(BACKGROUNDCOLOR)
-    windowSurface.blit(boardImage, boardRect, boardRect)
-    for x in range(8):
-        for y in range(8):
-            rectDst = pygame.Rect(BOARDX+x*CELLWIDTH+2, BOARDY+y*CELLHEIGHT+2, PIECEWIDTH, PIECEHEIGHT)
-            if mainBoard[x][y] == BLACK:
-                windowSurface.blit(blackImage, rectDst, blackRect)
-            elif mainBoard[x][y] == WHITE:
-                windowSurface.blit(whiteImage, rectDst, whiteRect)
+    if showUI == True:
+        windowSurface.fill(BACKGROUNDCOLOR)
+        windowSurface.blit(boardImage, boardRect, boardRect)
+        for x in range(8):
+            for y in range(8):
+                rectDst = pygame.Rect(BOARDX+x*CELLWIDTH+2, BOARDY+y*CELLHEIGHT+2, PIECEWIDTH, PIECEHEIGHT)
+                if mainBoard[x][y] == BLACK:
+                    windowSurface.blit(blackImage, rectDst, blackRect)
+                elif mainBoard[x][y] == WHITE:
+                    windowSurface.blit(whiteImage, rectDst, whiteRect)
     if gameOver == True or isGameOver(mainBoard):
+        score = getScoreOfBoard(mainBoard)
+        scorePlayer = score[playersTile[0]]
+        scoreComputer = score[playersTile[1]]
+        if score[0] != score[1]:
+            playersWins[score[0]<score[1]]+=1
+        if showUI == False:
+            print playersWins[0], playersWins[1]
+            resetBoard(mainBoard)
+            now = 0
+            continue
         gameOver = True
-        scorePlayer = getScoreOfBoard(mainBoard)[playersTile[0]]
-        scoreComputer = getScoreOfBoard(mainBoard)[playersTile[1]]
         outputStr = gameoverStr + str(scorePlayer) + ":" + str(scoreComputer)
         text = basicFont.render(outputStr, True, BLACK_COLOR, BLUE)
         textRect = text.get_rect()
@@ -71,6 +82,7 @@ while True:
             terminate()
         if gameOver == True and event.type == MOUSEBUTTONDOWN and event.button == 1:
             terminate()
+            
     
     windowSurface.fill(BACKGROUNDCOLOR)
     windowSurface.blit(boardImage, boardRect, boardRect)
