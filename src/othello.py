@@ -3,6 +3,7 @@ from pygame.locals import *
 from constants import *
 from operations import *
 from players import *
+import time
 
 def terminate():
     pygame.quit()
@@ -38,12 +39,16 @@ pygame.display.set_caption('Othello')
 gameOver = False
 
 player0 = SetPlayer('human')
-player1 = SetPlayer('human')
-player2 = SetPlayer('sauce')
+player1 = SetPlayer('sauce')
+player1.player.setgrader(Dudu())
+player2 = SetPlayer('human')
+#player2.player.setgrader(MuChu())
 players = [player1, player2]
 playersTile = [BLACK, WHITE]
 playersWins = [0, 0]
 showUI = True
+#random.seed(7122)
+starttime = time.clock()
 now = 0
 
 while True:
@@ -65,6 +70,8 @@ while True:
             playersWins[score[0]<score[1]]+=1
         if showUI == False:
             print playersWins[0], playersWins[1]
+            print time.clock()-starttime
+            starttime = time.clock()
             resetBoard(mainBoard)
             now = 0
             continue
@@ -75,7 +82,8 @@ while True:
         textRect.centerx = windowSurface.get_rect().centerx
         textRect.centery = windowSurface.get_rect().centery
         windowSurface.blit(text, textRect)
-    pygame.display.update()
+    if showUI == True:
+        pygame.display.update()
 
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -83,9 +91,9 @@ while True:
         if gameOver == True and event.type == MOUSEBUTTONDOWN and event.button == 1:
             terminate()
             
-    
-    windowSurface.fill(BACKGROUNDCOLOR)
-    windowSurface.blit(boardImage, boardRect, boardRect)
+    if showUI == True:
+        windowSurface.fill(BACKGROUNDCOLOR)
+        windowSurface.blit(boardImage, boardRect, boardRect)
 
     if (gameOver == False):
         x, y = players[now].getMove(mainBoard, playersTile[now])
@@ -94,7 +102,7 @@ while True:
             gameOver = True
         if getValidMoves(mainBoard, playersTile[now^1]) != []:
             now = now^1
-    
-    mainClock.tick(FPS)
+    if showUI == True:
+        mainClock.tick(FPS)
 
 raw_input("")

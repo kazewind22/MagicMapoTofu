@@ -59,6 +59,40 @@ def isValidMove(board, tile, xstart, ystart):
         return False
     return tilesToFlip
 
+def isValidMoveBool(board, myTile, xstart, ystart):
+    if not isOnBoard(xstart, ystart) or board[xstart][ystart] != NONE:
+        return False
+    opTile = myTile^1
+    for dx, dy in [ [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1] ]:
+        x, y = xstart+dx, ystart+dy
+        l = 0
+        while isOnBoard(x, y) and board[x][y] == opTile:
+            l = 1
+            x += dx
+            y += dy
+        if l and isOnBoard(x, y) == True and board[x][y] == myTile:
+            return True
+    return False
+
+def getTileToFlip(board, myTile, xstart, ystart):
+    opTile = myTile^1
+    tilesToFlip=[]
+    for dx, dy in [ [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1] ]:
+        x, y = xstart+dx, ystart+dy
+        l = 0
+        while isOnBoard(x, y) and board[x][y] == opTile:
+            l += 1
+            x += dx
+            y += dy
+        if l==0 or isOnBoard(x, y) == False or board[x][y] != myTile:
+            continue
+        while l>0:
+            l-=1
+            x-=dx
+            y-=dy
+            tilesToFlip.append([x,y])
+    return tilesToFlip
+
 def isOnBoard(x, y):
     return x >= 0 and x <= 7 and y >= 0 and y <=7
 
@@ -72,15 +106,11 @@ def getValidMoves(board, tile):
     return validMoves
 
 def getScoreOfBoard(board):
-    xscore = 0
-    oscore = 0
+    score = [0,0,0]
     for x in range(8):
         for y in range(8):
-            if board[x][y] == BLACK:
-                xscore += 1
-            if board[x][y] == WHITE:
-                oscore += 1
-    return {BLACK:xscore, WHITE:oscore}
+            score[board[x][y]]+=1
+    return (score[0],score[1])
 
 def makeMove(board, tile, xstart, ystart):
     tilesToFlip = isValidMove(board, tile, xstart, ystart)
@@ -103,13 +133,7 @@ def getBoardCopy(board):
     return dupeBoard
 
 def isGameOver(board):
-    return len(getValidMoves(board, WHITE))+len(getValidMoves(board, BLACK))==0
-    return True
-    for x in range(8):
-        for y in range(8):
-            if board[x][y] == NONE:
-                return False
-    return True
+    return len(getValidMoves(board, WHITE))==0 and len(getValidMoves(board, BLACK))==0
 
 def isOnBoard(x, y):
     return x >= 0 and x <= 7 and y >= 0 and y <=7
@@ -127,22 +151,30 @@ def getBothValidMoves(board):
 gBVM_lg = array('i',[0]*(1<<16))
 for i in range(16):
     gBVM_lg[1<<i] = i
-def getBothValidMoves_2(board, restnone):
+def getBothValidMoves_2(board, myTile, restnone):
     global gBVM_2_lg
-    BMoves = []
-    WMoves = []
+    lowMoves = []
+    midMoves = []
+    vipMoves = []
+    opMoveslen = 0
     for k in range(4):
-        mask = restnone[k]
+        mask = ( ( restnone>>(k<<4) )&65535 )
         while mask!=0:
             lowbit = mask - ( mask&(mask-1) )
-            xy = gBVM_lg[lowbit]
-            x, y = k*2 + (xy>>3), xy&7
+            xy = gBVM_lg[lowbit] + (k<<4)
+            x, y = xy>>3, xy&7
             mask-= lowbit
-            if isValidMove(board, BLACK, x, y) != False:
-                BMoves.append([x, y])
-            if isValidMove(board, WHITE, x, y) != False:
-                WMoves.append([x, y])
-    return BMoves, WMoves
+            if isValidMoveBool(board, myTile, x, y) == True:
+                if isOnCorner([x, y]):
+                    vipMoves.append([x, y])
+                elif isOnGoodSide([x, y]):
+                    midMoves.append([x, y])
+                else:
+                    lowMoves.append([x, y])
+            opMoveslen = opMoveslen or isValidMoveBool(board, myTile^1, x, y)
+    vipMoves.extend(midMoves)
+    vipMoves.extend(lowMoves)
+    return vipMoves, opMoveslen
 
 def isOnCorner(xy):
     x=xy[0]
