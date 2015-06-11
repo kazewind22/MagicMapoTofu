@@ -14,6 +14,7 @@ class SetPlayer:
             'cornerside':CornerSideAI(),
             'mix':EndAllWithMinMaxAI(),
             'sauce':LiyianAI(),
+            'first8':Fisrt8AI()
         }.get(Type, RandomAI())
     def getMove(self, board, Tile):
         return self.player.getMove(board, Tile)   
@@ -67,6 +68,66 @@ class MinMaxOneAI:
         A.sort()
         return A[0][1]
 
+class Fisrt8AI:
+    f1=open('./count_win.txt', 'r')
+    with f1:
+        content = f1.readlines()
+    f1.close()
+    IDT = 0
+    NID = {}
+    RID = []
+    EDG = []
+    DPA = []
+    for s in content:
+        ss = s.split()
+        for i in range(10):
+            ID = (int(ss[i*3+0]),int(ss[i*3+1]),int(ss[i*3+2]))
+            if ID not in NID:
+                NID[ID] = IDT
+                RID.append(ID)
+                EDG.append({})
+                DPA.append((2.0,0))
+                IDT+= 1
+            nID = NID[ID]
+            if i!=0:
+                EDG[oID][nID] = 1
+            oID = nID
+        DPA[oID] = (float(ss[30]),-1)
+    for i in range(IDT):
+        j = IDT-1-i
+        if len(EDG[j]) == 0:
+            continue
+        tmp = 2.0
+        for k in EDG[j]:
+            if tmp > DPA[k][0]:
+                tmp = DPA[k][0]
+                tmv = []
+                tmv.append(k)
+            elif tmp == DPA[k][0]:
+                tmv.append(k)
+        DPA[j]=(-tmp,random.choice(tmv))
+    def isMove(self, board, Tile):
+        ID = getBoardID(board)
+        return ID in self.NID and self.DPA[self.NID[ID]][1]>=0
+    def getMove(self, board, Tile):
+        if self.isMove(board, Tile):
+            #print 'get from fisrt8'
+            ID = getBoardID(board)
+            ID = self.RID[ self.DPA[self.NID[ID]][1] ]
+            if Tile == BLACK:
+                myMoves, opMoves = getBothValidMoves(board)
+            else:
+                opMoves, myMoves = getBothValidMoves(board)
+            for move in myMoves:
+                nboard = getBoardCopy(board)
+                makeMove(nboard, Tile, move[0], move[1])
+                if ID == getBoardID(nboard):
+                    return move
+            print 'fisrt8 getMove Error!'
+            return (0, 0)
+        else:
+            return EndAllWithMinMaxAI().getMove(board, Tile)
+
 class EndAllWithMinMaxAI:
     def getMove(self, board, Tile):
         cnt = 0
@@ -116,12 +177,16 @@ class EndAllWithMinMaxAI:
         return (-tans[0],tans[1])
 
 class LiyianAI:
+    F8 = Fisrt8AI()
     def __init__(self):
         self.grader = Yuehs()
+        self.fBound = 0
         self.sBound = 10
         self.xLevel = 4
     def setgrader(self, grader_):
         self.grader = grader_
+    def setfBound(self, fBound_):
+        self.fBound = fBound_
     def setsBound(self, sBound_):
         self.sBound = sBound_
     def setxLevel(self, xLevel_):
@@ -133,6 +198,8 @@ class LiyianAI:
             cnt+= ( board[xy>>3][xy&7] == NONE )
             restnone+= ( board[xy>>3][xy&7] == NONE ) << xy
         nboard = getBoardCopy(board)
+        if 60-cnt<self.fBound and self.F8.isMove(nboard, myTile):
+            return self.F8.getMove(nboard, myTile)
         if cnt<=self.sBound:
             solver = EndAllWithMinMaxAI()
             return solver.dfs(nboard, myTile, restnone)[1]

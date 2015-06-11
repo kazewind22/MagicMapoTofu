@@ -42,7 +42,8 @@ player0 = SetPlayer('human')
 
 player1 = SetPlayer('sauce')
 player1.player.setgrader(Yuehs())
-player1.player.setsBound(10)
+player1.player.setfBound(8)
+player1.player.setsBound(13)
 player1.player.setxLevel(2)
 
 player2 = SetPlayer('human')

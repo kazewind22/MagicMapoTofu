@@ -194,3 +194,10 @@ def opponentTile(myTile):
     if myTile >= 2:
         return NONE
     return myTile^1
+
+def getBoardID(board):
+    ID = [0,0,0]
+    for x in range(8):
+        for y in range(8):
+            ID[board[x][y]]+= 1<<((x<<3)+y)
+    return (ID[0],ID[1],ID[2])
