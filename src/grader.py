@@ -20,6 +20,13 @@ class Yuehs:
                 score+= ((board[x][y]==myTile)-(board[x][y]==opTile))<<2
                 score+= ((board[y][x]==myTile)-(board[y][x]==opTile))<<2
         return score
+class Yuehs_2:
+    def getGrade(self, board, myTile):
+        opTile=myTile^1
+        score = Yuehs().getGrade(board, myTile)
+        Moves = getBothValidMoves(board)
+        score+= len(Moves[myTile])-len(Moves[opTile])
+        return score
 class Dalu:
     f =  array('i',[
         +90,-60,+10,+10,+10,+10,-60,+90,

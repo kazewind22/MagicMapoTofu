@@ -5,13 +5,13 @@ from players_noGUI import *
 
 mainBoard = getNewBoard()
 player1 = SetPlayer('sauce')
-player1.player.setgrader(Yuehs())
+player1.player.setgrader(Yuehs_2())
 player1.player.setfBound(0)
 player1.player.setsBound(13)
 player1.player.setxLevel(2)
 
 player2 = SetPlayer('sauce')
-player2.player.setgrader(Yuehs())
+player2.player.setgrader(Yuehs_2())
 player2.player.setfBound(8)
 player2.player.setsBound(13)
 player2.player.setxLevel(2)
@@ -22,7 +22,10 @@ playersWins = [0, 0]
 #random.seed(7122)
 
 ALLstarttime = time.clock()
-f1=open('./count_win.txt', 'a')
+collectData = False
+showWins = True
+if collectData == True:
+    f1=open('./count_win.txt', 'a')
 round = 10000
 while round!=0:
     round-=1
@@ -54,7 +57,7 @@ while round!=0:
         flag = -1
     else:
         flag = 0
-    if moveCN == 9:
+    if collectData == True and moveCN == 9:
         s = ''
         for cb in ALLBoardID:
             s+=str(cb[0])+' '
@@ -62,7 +65,7 @@ while round!=0:
             s+=str(cb[2])+' '
         s+=str(flag)+' '+str(1)
         print >>f1, s
-    if round == 9999:
+    if showWins == True or round == 9999 :
         print 'win count:  ', playersWins[0], playersWins[1]
         print 'spent time: ', playersTime[0], playersTime[1]
         print 'total time: ', time.clock()-starttime

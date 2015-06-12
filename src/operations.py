@@ -139,14 +139,13 @@ def isOnBoard(x, y):
     return x >= 0 and x <= 7 and y >= 0 and y <=7
 
 def getBothValidMoves(board):
-    BMoves = []
-    WMoves = []
+    Moves = [[],[]]
     for xy in range(64):
-        if isValidMove(board, BLACK, xy>>3, xy&7) != False:
-            BMoves.append([xy>>3, xy&7])
-        if isValidMove(board, WHITE, xy>>3, xy&7) != False:
-            WMoves.append([xy>>3, xy&7])
-    return BMoves, WMoves
+        if isValidMoveBool(board, BLACK, xy>>3, xy&7) != False:
+            Moves[BLACK].append([xy>>3, xy&7])
+        if isValidMoveBool(board, WHITE, xy>>3, xy&7) != False:
+            Moves[WHITE].append([xy>>3, xy&7])
+    return Moves
 
 gBVM_lg = array('i',[0]*(1<<16))
 for i in range(16):
