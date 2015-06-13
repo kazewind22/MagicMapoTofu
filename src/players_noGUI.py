@@ -92,12 +92,13 @@ class Fisrt8AI:
             if i!=0:
                 EDG[oID][nID] = 1
             oID = nID
-        DPA[oID] = (float(ss[30]),-1)
+        DPA[oID] = (float(ss[30]),[])
     for i in range(IDT):
         j = IDT-1-i
         if len(EDG[j]) == 0:
             continue
         tmp = 2.0
+        tmv = []
         for k in EDG[j]:
             if tmp > DPA[k][0]:
                 tmp = DPA[k][0]
@@ -105,15 +106,15 @@ class Fisrt8AI:
                 tmv.append(k)
             elif tmp == DPA[k][0]:
                 tmv.append(k)
-        DPA[j]=(-tmp,random.choice(tmv))
+        DPA[j]=(-tmp,tmv)
     def isMove(self, board, Tile):
         ID = getBoardID(board)
-        return ID in self.NID and self.DPA[self.NID[ID]][1]>=0
+        return ID in self.NID and len(self.DPA[self.NID[ID]][1])>0
     def getMove(self, board, Tile):
         if self.isMove(board, Tile):
             #print 'get from fisrt8'
             ID = getBoardID(board)
-            ID = self.RID[ self.DPA[self.NID[ID]][1] ]
+            ID = self.RID[ random.choice(self.DPA[self.NID[ID]][1]) ]
             if Tile == BLACK:
                 myMoves, opMoves = getBothValidMoves(board)
             else:
