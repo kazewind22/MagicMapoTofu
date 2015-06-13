@@ -27,14 +27,24 @@ class Yuehs_2:
         Moves = getBothValidMoves(board)
         score+= len(Moves[myTile])-len(Moves[opTile])
         return score
+class Yuehs_27:
+    def getGrade(self, board, myTile):
+        opTile=myTile^1
+        score = Yuehs().getGrade(board, myTile)
+        Moves = getBothValidMoves(board)
+        mobil = len(Moves[myTile])-len(Moves[opTile])
+        for x, y in Moves[myTile]:
+            mobil-= isOnCorner([x^0 ,y^1]) or isOnCorner([x^1 ,y^0]) or isOnCorner([x^1 ,y^1])
+        score+= mobil<<2
+        return score
 class Dalu:
     f =  array('i',[
         +90,-60,+10,+10,+10,+10,-60,+90,
         -60,-80,+05,+05,+05,+05,-80,-60,
-        +10,+05,+01,+01,+01,+01,+05,+90,
-        +10,+05,+01,+01,+01,+01,+05,+90,
-        +10,+05,+01,+01,+01,+01,+05,+90,
-        +10,+05,+01,+01,+01,+01,+05,+90,
+        +10,+05,+01,+01,+01,+01,+05,+10,
+        +10,+05,+01,+01,+01,+01,+05,+10,
+        +10,+05,+01,+01,+01,+01,+05,+10,
+        +10,+05,+01,+01,+01,+01,+05,+10,
         -60,-80,+05,+05,+05,+05,-80,-60,
         +90,-60,+10,+10,+10,+10,-60,+90])
     def getGrade(self, board, myTile):

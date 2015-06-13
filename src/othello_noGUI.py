@@ -6,29 +6,31 @@ from players_noGUI import *
 mainBoard = getNewBoard()
 player1 = SetPlayer('sauce')
 player1.player.setgrader(Yuehs_2())
-player1.player.setfBound(0)
+player1.player.setfBound(8)
 player1.player.setsBound(13)
 player1.player.setxLevel(2)
 
 player2 = SetPlayer('sauce')
-player2.player.setgrader(Yuehs_2())
-player2.player.setfBound(8)
+player2.player.setgrader(Yuehs_27())
+player2.player.setfBound(0)
 player2.player.setsBound(13)
 player2.player.setxLevel(2)
 
 players = [player1, player2]
 playersTile = [BLACK, WHITE]
+pOneIsWhite = 0
 playersWins = [0, 0]
 #random.seed(7122)
 
 ALLstarttime = time.clock()
-collectData = False
-showWins = True
+collectData = 0
+showWins = 1
+swapPlayers = 1
 if collectData == True:
     f1=open('./count_win.txt', 'a')
-round = 10000
-while round!=0:
-    round-=1
+maxR = 100
+round = 0
+while round < maxR:
     starttime = time.clock()
     playersTime = [0, 0]
     resetBoard(mainBoard)
@@ -38,10 +40,10 @@ while round!=0:
     while isGameOver(mainBoard) == False:
         ts = time.clock()
         x, y = players[now].getMove(mainBoard, playersTile[now])
-        playersTime[now]+= time.clock() - ts
-        if makeMove(mainBoard, now, x, y) == False and players[now] != player0:
+        playersTime[now^pOneIsWhite]+= time.clock() - ts
+        if makeMove(mainBoard, now, x, y) == False:
             print 'bad AI ' + playersTile[now] + ' made a invalid move!'
-            gameOver = True
+            break
         if moveCN < 9:
             ALLBoardID.append(getBoardID(mainBoard))
             moveCN+= 1
@@ -49,7 +51,7 @@ while round!=0:
             now = now^1
     score = getScoreOfBoard(mainBoard)
     if score[0] != score[1]:
-        playersWins[score[0]<score[1]]+=1
+        playersWins[(score[0]<score[1])^pOneIsWhite]+=1
     flag=7122
     if score[0]<score[1]:
         flag = 1
@@ -65,8 +67,12 @@ while round!=0:
             s+=str(cb[2])+' '
         s+=str(flag)+' '+str(1)
         print >>f1, s
-    if showWins == True or round == 9999 :
+    if showWins == True or round < 5 :
         print 'win count:  ', playersWins[0], playersWins[1]
-        print 'spent time: ', playersTime[0], playersTime[1]
+        print 'spent time: ', playersTime[pOneIsWhite], playersTime[1^pOneIsWhite]
         print 'total time: ', time.clock()-starttime
+    round+= 1
+    if swapPlayers == True:
+        players[0], players[1] = players[1], players[0]
+        pOneIsWhite^= 1
 print 'ALLtotal time: ', time.clock() - ALLstarttime
