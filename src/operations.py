@@ -96,6 +96,14 @@ def getTileToFlip(board, myTile, xstart, ystart):
 def isOnBoard(x, y):
     return x >= 0 and x <= 7 and y >= 0 and y <=7
 
+def isFrontier(board, x, y):
+    for dx, dy in [ [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1] ]:
+        _x = x + dx
+        _y = y + dy
+        if isOnBoard(_x, _y) and board[_x][_y] == NONE:
+            return True
+    return False
+
 def getValidMoves(board, tile):
     validMoves = []
 
@@ -200,3 +208,23 @@ def getBoardID(board):
         for y in range(8):
             ID[board[x][y]]+= 1<<((x<<3)+y)
     return (ID[0],ID[1],ID[2])
+
+def Mobility(board, myTile):
+    opTile=myTile^1
+    f = array('i',[
+        +90,-60,+10,+10,+10,+10,-60,+90,
+        -60,-80,+05,+05,+05,+05,-80,-60,
+        +10,+05,+01,+01,+01,+01,+05,+10,
+        +10,+05,+01,+01,+01,+01,+05,+10,
+        +10,+05,+01,+01,+01,+01,+05,+10,
+        +10,+05,+01,+01,+01,+01,+05,+10,
+        -60,-80,+05,+05,+05,+05,-80,-60,
+        +90,-60,+10,+10,+10,+10,-60,+90])
+    Moves = getValidMoves(board, myTile)
+    score = 0
+    for move in Moves:
+        score += f[(move[0]<<3)+(move[1])]
+        for fliptile in getTileToFlip(board, myTile, move[0], move[1]):
+            if isFrontier(board, fliptile[0], fliptile[1]):
+                score -= f[(fliptile[0]<<3)+(fliptile[1])]
+    return score
