@@ -4,15 +4,22 @@ from operations import *
 from players_noGUI import *
 
 mainBoard = getNewBoard()
+
 player1 = SetPlayer('sauce')
-player1.player.setgrader(Yuehs_2())
+player1.player.setgrader(Yuehs_271())
 player1.player.setfBound(8)
+player1.player.setfFiles('./count_win_Yuehs_271_BLACK.txt',BLACK)
+player1.player.setfFiles('./count_win_Yuehs_271_WHITE.txt',WHITE)
 player1.player.setsBound(13)
 player1.player.setxLevel(2)
 
 player2 = SetPlayer('sauce')
-player2.player.setgrader(Yuehs_27())
-player2.player.setfBound(0)
+player2.player.setgrader(Kart())
+player2.player.setfBound(8)
+#player2.player.setfFiles('./count_win_Yuehs_271_BLACK.txt',BLACK)
+#player2.player.setfFiles('./count_win_Yuehs_271_WHITE.txt',WHITE)
+player2.player.setfFiles('./count_win_6.txt',BLACK)
+player2.player.setfFiles('./count_win_6.txt',WHITE)
 player2.player.setsBound(13)
 player2.player.setxLevel(2)
 
@@ -23,12 +30,14 @@ playersWins = [0, 0]
 #random.seed(7122)
 
 ALLstarttime = time.clock()
-collectData = 0
-showWins = 1
+collectData = 1
+showWins = 0
 swapPlayers = 1
 if collectData == True:
-    f1=open('./count_win.txt', 'a')
-maxR = 100
+    ff=[0,0]
+    ff[0]=open('./count_win_Yuehs_271_BLACK.txt', 'a')
+    ff[1]=open('./count_win_Yuehs_271_WHITE.txt', 'a')
+maxR = 10000
 round = 0
 while round < maxR:
     starttime = time.clock()
@@ -66,7 +75,10 @@ while round < maxR:
             s+=str(cb[1])+' '
             s+=str(cb[2])+' '
         s+=str(flag)+' '+str(1)
-        print >>f1, s
+        if pOneIsWhite:
+            print >>ff[1], s
+        else:
+            print >>ff[0], s
     if showWins == True or round < 5 :
         print 'win count:  ', playersWins[0], playersWins[1]
         print 'spent time: ', playersTime[pOneIsWhite], playersTime[1^pOneIsWhite]

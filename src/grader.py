@@ -2,6 +2,9 @@ import sys, random
 from constants import *
 from operations import *
 
+def sgn(bxy, myTile):
+    return (bxy==myTile)-(bxy==(myTile^1))
+
 class Yuehs:
     def getGrade(self, board, myTile):
         opTile=myTile^1
@@ -39,6 +42,67 @@ class Yuehs_27:
             mobil-= isOnCorner([x^0 ,y^1]) or isOnCorner([x^1 ,y^0]) or isOnCorner([x^1 ,y^1])
         score+= mobil<<2
         return score
+    
+class Yuehs_271:
+    V = array('i',[
+        +20, -3,+11, +8, +8,+11, -3,+20,
+         -3, -7, -4, +1, +1, -4, -7, -3,
+        +11, -4, +2, +2, +2, +2, -4,+11,
+         +8, +1, +2, -3, -3, +2, +1, +8,
+         +8, +1, +2, -3, -3, +2, +1, +8,
+        +11, -4, +2, +2, +2, +2, -4,+11,
+         -3, -7, -4, +1, +1, -4, -7, -3,
+        +20, -3,+11, +8, +8,+11, -3,+20])
+    def getGrade(self, board, myTile):
+        opTile=myTile^1
+        sum = [0, 0, 0]
+        for x in range(8):
+            for y in range(8):
+                sum[board[x][y]]+=1
+        ##############################
+        score3 = 0
+        for x in range(8):
+            for y in range(8):
+                score3+=sgn(board[x][y], myTile)*self.V[(x<<3)+y]
+        ##############################
+        score1 = 0
+        for x in [0,7]:
+            for y in [2,3,4,5]:
+                score1+= sgn(board[x][y], myTile)
+                score1+= sgn(board[y][x], myTile)
+        for x,y in [(0,0),(0,7),(7,0),(7,7)]:
+            for dx,dy in [(0,1),(1,0),(1,1)]:
+                score1+= (board[x][y]==board[x^dx][y^dy])*sgn(board[x][y], myTile)
+        score1 = score1*4+score3/4
+        ##############################
+        score2 = 0
+        for x,y in [(0,0),(0,7),(7,0),(7,7)]:
+            score2+= sgn(board[x^0][y^0], myTile)<<10
+            score2-= (board[x][y]==2)*sgn(board[x^1][y^1], myTile)<<5
+            for dx,dy in [(0,1),(1,0),(1,1)]:
+                score2-=(board[x][y]==2)*sgn(board[x^dx][y^dy], myTile)*4
+        ##############################
+        Moves = getBothValidMoves(board)
+        mobil = len(Moves[myTile])-len(Moves[opTile])
+        c1,c2=0,0
+        for x,y in [(0,0),(0,7),(7,0),(7,7)]:
+            if board[x][y]!=2:
+                continue
+            flag1 = [x, y] in Moves[myTile]
+            flag2 = [x, y] in Moves[opTile]
+            if (flag1,flag2) == (0,0):
+                for dx,dy in [(0,1),(1,0),(1,1)]:
+                    mobil-= ([x^dx,y^dy] in Moves[myTile])
+                    # mobil+= ([x^dx,y^dy] in Moves[opTile])
+            elif (flag1,flag2) == (1,1):
+                c1+=1
+            elif (flag1,flag2) == (1,0):
+                c2+=1
+            elif (flag1,flag2) == (0,1):
+                c2-=1
+        score = (score1+score2)*(sum[myTile]+sum[opTile])+mobil*4*sum[myTile]+(c1&1)*64+c2*128
+        ##############################
+        return score
 
 class Kart:
     V = array('i',[
@@ -47,7 +111,7 @@ class Kart:
         +11, -4, +2, +2, +2, +2, -4,+11,
          +8, +1, +2, -3, -3, +2, +1, +8,
          +8, +1, +2, -3, -3, +2, +1, +8,
-        +11, -4, +2, -3, -3, +2, -4,+11,
+        +11, -4, +2, +2, +2, +2, -4,+11,
          -3, -7, -4, +1, +1, -4, -7, -3,
         +20, -3,+11, +8, +8,+11, -3,+20])
     def getGrade(self, board, myTile):
@@ -111,7 +175,7 @@ class Dalu:
         +11, -4, +2, +2, +2, +2, -4,+11,
          +8, +1, +2, -3, -3, +2, +1, +8,
          +8, +1, +2, -3, -3, +2, +1, +8,
-        +11, -4, +2, -3, -3, +2, -4,+11,
+        +11, -4, +2, +2, +2, +2, -4,+11,
          -3, -7, -4, +1, +1, -4, -7, -3,
         +20, -3,+11, +8, +8,+11, -3,+20])
     def getGrade(self, board, myTile):
