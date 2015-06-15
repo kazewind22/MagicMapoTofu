@@ -168,6 +168,96 @@ class Kart:
         score = 10*p + 801.724*c + 382.026*l + 78.922*m + 74.396*f + 10*d
         return score
 
+class Kart_2:
+    V = array('i',[
+        +20, -3,+11, +8, +8,+11, -3,+20,
+         -3, -7, -4, +1, +1, -4, -7, -3,
+        +11, -4, +2, +2, +2, +2, -4,+11,
+         +8, +1, +2, -3, -3, +2, +1, +8,
+         +8, +1, +2, -3, -3, +2, +1, +8,
+        +11, -4, +2, +2, +2, +2, -4,+11,
+         -3, -7, -4, +1, +1, -4, -7, -3,
+        +20, -3,+11, +8, +8,+11, -3,+20])
+    def getGrade(self, board, myTile):
+        opTile=myTile^1
+        d = 0
+        my_tiles = 0
+        op_tiles = 0
+        my_front_tiles = 0
+        op_front_tiles = 0
+        for x in range(8):
+            for y in range(8):
+                if board[x][y] == myTile:
+                    d += self.V[(x<<3)+y]
+                    my_tiles += 1
+                    if isFrontier(board, x, y):
+                        my_front_tiles += 1
+                elif board[x][y] == opTile:
+                    d -= self.V[(x<<3)+y]
+                    op_tiles -= 1
+                    if isFrontier(board, x, y):
+                        op_front_tiles += 1
+        p = 0
+        if (my_tiles + op_tiles) != 0:
+            if my_tiles > op_tiles:
+                p = 100. * my_tiles / ( my_tiles + op_tiles)
+            elif my_tiles < op_tiles:
+                p = -100. * op_tiles / ( my_tiles + op_tiles)
+
+        f = 0
+        if (my_front_tiles + op_front_tiles) != 0:
+            if my_front_tiles > op_front_tiles:
+                f = -100. * my_front_tiles / (my_front_tiles + op_front_tiles)
+            elif my_front_tiles < op_front_tiles:
+                f = 100. * op_front_tiles / (my_front_tiles + op_front_tiles)
+
+        c = 0
+        l = 0
+        for x,y in [(0,0),(0,7),(7,0),(7,7)]:
+            c += 25 * ((board[x][y]==myTile)-(board[x][y]==opTile))
+            if board[x][y]==2:
+                for dx,dy in [(0,1),(1,0),(1,1)]:
+                    l += -12.5 * ((board[x^dx][y^dy]==myTile) - (board[x^dx][y^dy]==opTile))
+
+        Moves = getBothValidMoves(board)
+        my_mob = len(Moves[myTile])
+        op_mob = len(Moves[opTile])
+        m = 0
+        if (my_mob + op_mob) != 0:
+            if my_mob > op_mob:
+                m = 100. * my_mob / (my_mob + op_mob)
+            elif my_mob < op_mob:
+                m = -100. * op_mob / (my_mob + op_mob)
+
+        s = 0   #sequence penalty
+        for i in range(8):
+            max_seq = 0
+            for j in range(8):
+                seq = 0
+                while j < 8 and board[i][j] == myTile:
+                    seq += 1
+                    j += 1
+                if seq > max_seq:
+                    max_seq = seq
+            s += max_seq
+            if i == 0 or i == 7:
+                s += max_seq
+        for j in range(8):
+            max_seq = 0
+            for i in range(8):
+                seq = 0
+                while i < 8 and board[i][j] == myTile:
+                    seq += 1
+                    i += 1
+                if seq > max_seq:
+                    max_seq = seq
+            s += max_seq
+            if j == 0 or j == 7:
+                s += max_seq
+
+        score = 10*p + 801.724*c + 382.026*l + 78.922*m + 74.396*f + 10*d - 100*s
+        return score
+
 class Dalu:
     f =  array('i',[
         +20, -3,+11, +8, +8,+11, -3,+20,

@@ -18,26 +18,34 @@ player2.player.setgrader(Kart())
 player2.player.setfBound(8)
 #player2.player.setfFiles('./count_win_Yuehs_271_BLACK.txt',BLACK)
 #player2.player.setfFiles('./count_win_Yuehs_271_WHITE.txt',WHITE)
-player2.player.setfFiles('./count_win_6.txt',BLACK)
-player2.player.setfFiles('./count_win_6.txt',WHITE)
+player2.player.setfFiles('./count_win.txt',BLACK)
+player2.player.setfFiles('./count_win.txt',WHITE)
 player2.player.setsBound(13)
 player2.player.setxLevel(2)
 
-players = [player1, player2]
+player3 = SetPlayer('sauce')
+player3.player.setgrader(Kart_2())
+player3.player.setfBound(8)
+player3.player.setfFiles('./count_win.txt',BLACK)
+player3.player.setfFiles('./count_win.txt',WHITE)
+player3.player.setsBound(13)
+player3.player.setxLevel(2)
+
+players = [player3, player2]
 playersTile = [BLACK, WHITE]
 pOneIsWhite = 0
 playersWins = [0, 0]
 #random.seed(7122)
 
 ALLstarttime = time.clock()
-collectData = 1
-showWins = 0
+collectData = 0
+showWins = 1
 swapPlayers = 1
 if collectData == True:
     ff=[0,0]
     ff[0]=open('./count_win_Yuehs_271_BLACK.txt', 'a')
     ff[1]=open('./count_win_Yuehs_271_WHITE.txt', 'a')
-maxR = 10000
+maxR = 100
 round = 0
 while round < maxR:
     starttime = time.clock()

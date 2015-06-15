@@ -56,9 +56,7 @@ player2.player.setfFiles('./count_win.txt',WHITE)
 player2.player.setsBound(13)
 player2.player.setxLevel(2)
 
-player2 = player0
-
-players = [player1, player2]
+players = [player0, player2]
 playersTile = [BLACK, WHITE]
 playersWins = [0, 0]
 #random.seed(7122)
