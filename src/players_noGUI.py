@@ -211,14 +211,16 @@ class LiyianAI:
         res = self.dfs_6(nboard, myTile, restnone, self.xLevel, -(1<<30), 1<<30)
         return res[1]
     def dfs_6(self, board, myTile, restnone, depth, alpha, beta):
+        if depth == 0:
+            return (self.grader.getGrade(board, myTile),0)
         opTile = myTile^1
         myMoves, opMoveslen = getBothValidMoves_2(board, myTile, restnone)
-        if depth == 0 or (opMoveslen == 0 and len(myMoves) == 0):
+        if opMoveslen == 0 and len(myMoves) == 0:
             return (self.grader.getGrade(board, myTile),0)
         elif len(myMoves) == 0:
             return (-self.dfs_6(board, opTile, restnone, depth-1, -beta, -alpha)[0],0)
         tans=(1<<30)
-        tmov=(0,0)
+        tmov=[]
         nalpha = alpha
         for move in myMoves:
             tilesToFlip = getTileToFlip(board, myTile, move[0], move[1])
