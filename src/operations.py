@@ -209,6 +209,25 @@ def getBoardID(board):
             ID[board[x][y]]+= 1<<((x<<3)+y)
     return (ID[0],ID[1],ID[2])
 
+def getBoardID_6(board, myTile):
+    ID = []
+    for i in range(3):
+        ID.append([0]*8)
+    for x in range(8):
+        for y in range(8):
+            ID[board[x][y]][0]+= 1<<(00+x*8+y)
+            ID[board[x][y]][1]+= 1<<(07+x*8-y)
+            ID[board[x][y]][2]+= 1<<(63-x*8-y)
+            ID[board[x][y]][3]+= 1<<(56-x*8+y)
+            ID[board[x][y]][4]+= 1<<(00+y*8+x)
+            ID[board[x][y]][5]+= 1<<(07+y*8-x)
+            ID[board[x][y]][6]+= 1<<(63-y*8-x)
+            ID[board[x][y]][7]+= 1<<(56-y*8+x)
+    ans = (ID[0][0],ID[1][0],myTile)
+    for i in range(8):
+        ans = min(ans,(ID[0][i],ID[1][i],myTile))
+    return ans
+
 def Mobility(board, myTile):
     opTile=myTile^1
     f = array('i',[

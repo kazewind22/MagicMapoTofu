@@ -1,7 +1,8 @@
-import sys, random
+import time, sys, random
 from constants import *
 from operations import *
 from grader import *
+from advisor import *
 
 class SetPlayer:
     def __init__(self, Type):
@@ -14,7 +15,6 @@ class SetPlayer:
             'cornerside':CornerSideAI(),
             'mix':EndAllWithMinMaxAI(),
             'sauce':LiyianAI(),
-            'first8':Fisrt8AI()
         }.get(Type, RandomAI())
     def getMove(self, board, Tile):
         return self.player.getMove(board, Tile)   
@@ -68,69 +68,6 @@ class MinMaxOneAI:
         A.sort()
         return A[0][1]
 
-class Fisrt8AI:
-    def __init__(self):
-        self.NID={}
-        self.RID=[]
-        self.EDG=[]
-        self.DPA=[]
-    def loadFile(self, file):
-        f1=open(file, 'r')
-        with f1:
-            content = f1.readlines()
-        f1.close()
-        IDT = 0
-        for s in content:
-            ss = s.split()
-            for i in range(10):
-                ID = (int(ss[i*3+0]),int(ss[i*3+1]),int(ss[i*3+2]))
-                if ID not in self.NID:
-                    self.NID[ID] = IDT
-                    self.RID.append(ID)
-                    self.EDG.append({})
-                    self.DPA.append((2.0,0))
-                    IDT+= 1
-                nID = self.NID[ID]
-                if i!=0:
-                    self.EDG[oID][nID] = 1
-                oID = nID
-            self.DPA[oID] = (float(ss[30]),[])
-        for i in range(IDT):
-            j = IDT-1-i
-            if len(self.EDG[j]) == 0:
-                continue
-            tmp = 2.0
-            tmv = []
-            for k in self.EDG[j]:
-                if tmp > self.DPA[k][0]:
-                    tmp = self.DPA[k][0]
-                    tmv = []
-                    tmv.append(k)
-                elif tmp == self.DPA[k][0]:
-                    tmv.append(k)
-            self.DPA[j]=(-tmp,tmv)
-    def isMove(self, board, Tile):
-        ID = getBoardID(board)
-        return ID in self.NID and len(self.DPA[self.NID[ID]][1])>0
-    def getMove(self, board, Tile):
-        if self.isMove(board, Tile):
-            #print 'get from fisrt8'
-            ID = getBoardID(board)
-            ID = self.RID[ random.choice(self.DPA[self.NID[ID]][1]) ]
-            if Tile == BLACK:
-                myMoves, opMoves = getBothValidMoves(board)
-            else:
-                opMoves, myMoves = getBothValidMoves(board)
-            for move in myMoves:
-                nboard = getBoardCopy(board)
-                makeMove(nboard, Tile, move[0], move[1])
-                if ID == getBoardID(nboard):
-                    return move
-            print 'fisrt8 getMove Error!'
-            return (0, 0)
-        else:
-            return EndAllWithMinMaxAI().getMove(board, Tile)
-
 class EndAllWithMinMaxAI:
     def getMove(self, board, Tile):
         cnt = 0
@@ -183,15 +120,15 @@ class LiyianAI:
     def __init__(self):
         self.grader = Yuehs()
         self.fBound = 0
+        self.advise = [Fisrt8AI(None),Fisrt8AI(None)]
         self.sBound = 10
         self.xLevel = 4
-        self.F8 = [Fisrt8AI(),Fisrt8AI()]
     def setgrader(self, grader_):
         self.grader = grader_
     def setfBound(self, fBound_):
         self.fBound = fBound_
-    def setfFiles(self, fFiles_, myTile):
-        self.F8[myTile].loadFile(fFiles_)
+    def setadvise(self, advise_, myTile):
+        self.advise[myTile]=advise_
     def setsBound(self, sBound_):
         self.sBound = sBound_
     def setxLevel(self, xLevel_):
@@ -203,8 +140,8 @@ class LiyianAI:
             cnt+= ( board[xy>>3][xy&7] == NONE )
             restnone+= ( board[xy>>3][xy&7] == NONE ) << xy
         nboard = getBoardCopy(board)
-        if 60-cnt<self.fBound and self.F8[myTile].isMove(nboard, myTile):
-            return self.F8[myTile].getMove(nboard, myTile)
+        if 60-cnt<=self.fBound and self.advise[myTile].isMove(nboard, myTile):
+            return self.advise[myTile].getMove(nboard, myTile)
         if cnt<=self.sBound:
             solver = EndAllWithMinMaxAI()
             return solver.dfs(nboard, myTile, restnone)[1]
