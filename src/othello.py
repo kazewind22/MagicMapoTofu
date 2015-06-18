@@ -38,21 +38,25 @@ pygame.display.set_caption('Othello')
 
 gameOver = False
 
+advisor1 = Fisrt8AI('./count_win.txt')
+advisor2 = Fisrt8AI('./count_win_Yuehs_271_BLACK.txt')
+advisor3 = Fisrt8AI('./count_win_Yuehs_271_WHITE.txt')
+
 player0 = SetPlayer('human')
 
 player1 = SetPlayer('sauce')
 player1.player.setgrader(Yuehs_271())
-player1.player.setfBound(0)
-player1.player.setfFiles('./count_win_Yuehs_271_BLACK.txt',BLACK)
-player1.player.setfFiles('./count_win_Yuehs_271_WHITE.txt',WHITE)
+player1.player.setfBound(8)
+player1.player.setadvise(advisor2,BLACK)
+player1.player.setadvise(advisor3,WHITE)
 player1.player.setsBound(13)
 player1.player.setxLevel(2)
 
 player2 = SetPlayer('sauce')
 player2.player.setgrader(Kart())
 player2.player.setfBound(8)
-player2.player.setfFiles('./count_win.txt',BLACK)
-player2.player.setfFiles('./count_win.txt',WHITE)
+player2.player.setadvise(advisor1,BLACK)
+player2.player.setadvise(advisor1,WHITE)
 player2.player.setsBound(13)
 player2.player.setxLevel(2)
 
