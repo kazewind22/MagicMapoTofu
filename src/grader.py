@@ -93,14 +93,14 @@ class Yuehs_271:
             if (flag1,flag2) == (0,0):
                 for dx,dy in [(0,1),(1,0),(1,1)]:
                     mobil-= ([x^dx,y^dy] in Moves[myTile])
-                    # mobil+= ([x^dx,y^dy] in Moves[opTile])
+                    mobil+= ([x^dx,y^dy] in Moves[opTile])
             elif (flag1,flag2) == (1,1):
                 c1+=1
             elif (flag1,flag2) == (1,0):
                 c2+=1
             elif (flag1,flag2) == (0,1):
                 c2-=1
-        score = (score1+score2)*(sum[myTile]+sum[opTile])+mobil*4*sum[myTile]+(c1&1)*64+c2*128
+        score = (score1+score2+c2*1024+(c1&1)*768)*sum[myTile]+mobil*4*(sum[myTile]+sum[opTile])
         ##############################
         return score
 

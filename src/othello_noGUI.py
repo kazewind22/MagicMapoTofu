@@ -24,16 +24,23 @@ advisor3 = Fisrt8AI('./count_win_Yuehs_271_WHITE.txt')
 advisor4 = Fisrt6AI('./cw6_271_BLACK.txt')
 advisor5 = Fisrt6AI('./cw6_271_WHITE.txt')
 
-addP('sauce',Dalu()     ,8,advisor1,advisor1,13,2)#0
-addP('sauce',Yuehs()    ,8,advisor1,advisor1,13,2)#1
-addP('sauce',Yuehs_2()  ,8,advisor1,advisor1,13,2)#2
-addP('sauce',Yuehs_27() ,8,advisor1,advisor1,13,2)#3
-addP('sauce',Yuehs_271(),8,advisor2,advisor3,13,2)#4
-addP('sauce',Yuehs_271(),6,advisor4,advisor5,13,2)#5
+player.append(0)#0
+addP('sauce',Dalu()     ,8,advisor1,advisor1,13,2)#1
+addP('sauce',Yuehs()    ,8,advisor1,advisor1,13,2)#2
+addP('sauce',Yuehs_2()  ,8,advisor1,advisor1,13,2)#3
+addP('sauce',Yuehs_27() ,8,advisor1,advisor1,13,2)#4
+addP('sauce',Yuehs_271(),8,advisor2,advisor3,13,2)#5
 addP('sauce',Kart()     ,8,advisor1,advisor1,13,2)#6
 addP('sauce',Kart_2()   ,8,advisor1,advisor1,13,2)#7
-
-players = [player[4], player[5]]
+addP('sauce',Yuehs_271(),0,advisor2,advisor3,13,2)#8
+addP('sauce',Kart()     ,0,advisor1,advisor1,13,2)#9
+addP('sauce',Kart_2()   ,0,advisor1,advisor1,13,2)#10
+players = [player[4], player[7]]
+if len(sys.argv)>=3:
+    players[0]=player[int(sys.argv[1])]
+    players[1]=player[int(sys.argv[2])]
+else:
+    exit(0)
 playersTile = [BLACK, WHITE]
 pOneIsWhite = 0
 playersWins = [0, 0]
@@ -45,6 +52,13 @@ swapPlayers = 1
 
 collectData_8 = 0
 collectData_6 = 0
+for i in range(3,len(sys.argv)):
+    if sys.argv[i]=='-c6':
+        collectData_6 = 1
+    if sys.argv[i]=='-c8':
+        collectData_8 = 1
+    if sys.argv[i]=='-nsw':
+        showWins = 0
 ff=[0,0,0,0]
 if collectData_8 == True:
     ff[0]=open('./count_win_Yuehs_271_BLACK.txt', 'a')
