@@ -70,44 +70,52 @@ class MinMaxOneAI:
 
 class EndAllWithMinMaxAI:
     def getMove(self, board, Tile):
-        cnt = 0
+        cnt = [0,0,0]
         restnone = 0
         for xy in range(64):
-            cnt+= ( board[xy>>3][xy&7] == NONE )
+            cnt[board[xy>>3][xy&7]]+= 1
             restnone+= (board[xy>>3][xy&7]==NONE) << xy
-        if cnt<=10:
+        if cnt[2]<=10:
             nboard = getBoardCopy(board)
-            return self.dfs(nboard, Tile, restnone)[1]
-        if cnt<=12:
+            return self.dfs(nboard, Tile, restnone, cnt)[1]
+        if cnt[2]<=12:
             solver = MinMaxOneAI() 
         else:
             solver = CornerSideAI()
         return solver.getMove(board, Tile)
 
-    def dfs(self, board, myTile, restnone):
+    def dfs(self, board, myTile, restnone, cnt):
+        if cnt[NONE] == 0:
+            return (cnt[myTile]-cnt[myTile^1],(0,0))
         opTile = myTile^1
         myMoves, opMoveslen = getBothValidMoves_2(board, myTile, restnone)
         if opMoveslen ==0 and len(myMoves) == 0:
-            score = getScoreOfBoard(board)
-            return (score[myTile]-score[opTile],(0,0))
+            return (cnt[myTile]-cnt[opTile],(0,0))
         elif len(myMoves) == 0:
-            return (-self.dfs(board, opTile, restnone)[0],(0,0))
+            return (-self.dfs(board, opTile, restnone, cnt)[0],(0,0))
         tans=(1<<30,(0,0))
         for move in myMoves:
             tilesToFlip = getTileToFlip(board, myTile, move[0], move[1])
             ###################################
             mid = move[0]*8+move[1]
+            tfn = len(tilesToFlip)
             board[move[0]][move[1]] = myTile
             for x ,y in tilesToFlip:
                 board[x][y]^=1
             restnone-= 1<<mid
+            cnt[ NONE ]-= 1
+            cnt[opTile]-=tfn
+            cnt[myTile]+=tfn+1
             ###################################
-            res = self.dfs(board, opTile, restnone)
+            res = self.dfs(board, opTile, restnone, cnt)
             ###################################
             board[move[0]][move[1]] = NONE
             for x ,y in tilesToFlip:
                 board[x][y]^=1
             restnone+= 1<<mid
+            cnt[ NONE ]+= 1
+            cnt[opTile]+=tfn
+            cnt[myTile]-=tfn+1
             ###################################
             if res[0] < tans[0]:
                 tans = (res[0], move)
@@ -134,17 +142,16 @@ class LiyianAI:
     def setxLevel(self, xLevel_):
         self.xLevel = xLevel_
     def getMove(self, board, myTile):
-        cnt = 0
+        cnt = [0,0,0]
         restnone = 0
         for xy in range(64):
-            cnt+= ( board[xy>>3][xy&7] == NONE )
+            cnt[board[xy>>3][xy&7]]+= 1
             restnone+= ( board[xy>>3][xy&7] == NONE ) << xy
         nboard = getBoardCopy(board)
-        if 60-cnt<=self.fBound and self.advise[myTile].isMove(nboard, myTile):
+        if 60-cnt[NONE]<=self.fBound and self.advise[myTile].isMove(nboard, myTile):
             return self.advise[myTile].getMove(nboard, myTile)
-        if cnt<=self.sBound:
-            solver = EndAllWithMinMaxAI()
-            return solver.dfs(nboard, myTile, restnone)[1]
+        elif cnt[NONE]<=self.sBound:
+            return EndAllWithMinMaxAI().dfs(nboard, myTile, restnone, cnt)[1]
         res = self.dfs_6(nboard, myTile, restnone, self.xLevel, -(1<<30), 1<<30)
         return res[1]
     def dfs_6(self, board, myTile, restnone, depth, alpha, beta):
