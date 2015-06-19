@@ -16,9 +16,15 @@ int myget(vector<unt>&a,dou&y,int&z){
 	if(scanf("%lf %d",&y,&z)==EOF)return 0;
 	return 1;
 }
-char fn[10][100]={"count_win.txt","count_win_Yuehs_271_BLACK.txt","count_win_Yuehs_271_WHITE.txt"};
+char fn[10][100]={
+	"count_win.txt",
+	"count_win_Yuehs_271_BLACK.txt",
+	"count_win_Yuehs_271_WHITE.txt",
+	"count_win_anti_271_BLACK.txt",
+	"count_win_anti_271_WHITE.txt"
+};
 int main(){
-	for(int k=0;k<3;k++){
+	for(int k=0;k<5;k++){
 		mp.clear();
 		freopen(fn[k],"r",stdin);
 		dou y;
@@ -32,7 +38,7 @@ int main(){
 		freopen(fn[k],"w",stdout);
 		for(auto&it:mp){
 			for(auto&jt:it.first){
-				printf("%020I64u ",jt);
+				printf("%I64u ",jt);
 			}
 			printf("%+.10f %d\n",it.second.first,it.second.second);
 		}	
