@@ -34,12 +34,18 @@ addP('sauce',Yuehs_27() ,8,advisor1,advisor1,13,2)#4
 addP('sauce',Yuehs_271(),8,advisor2,advisor3,13,2)#5 regular
 addP('sauce',Kart()     ,8,advisor1,advisor1,13,2)#6
 addP('sauce',Kart_2()   ,8,advisor1,advisor1,13,2)#7
-addP('sauce',Yuehs_271(),8,advisor1,advisor1,13,2)#8
-addP('sauce',Kart()     ,8,advisor6,advisor7,13,2)#9 anti
+addP('sauce',Yuehs_271(),8,advisor1,advisor1,13,2)#8 anti
+addP('sauce',Kart()     ,8,advisor6,advisor7,13,2)#9
 addP('sauce',Kart_2()   ,8,advisor6,advisor7,13,2)#10
 addP('sauce',Yuehs_271(),0,advisor0,advisor0,13,2)#11 no advisor
 addP('sauce',Kart()     ,0,advisor0,advisor0,13,2)#12
 addP('sauce',Kart_2()   ,0,advisor0,advisor0,13,2)#13
+addP('sauce',Yuehs_271(),8,advisor2,advisor3,13,4)#14 deeper xLevel
+addP('sauce',Kart()     ,8,advisor1,advisor1,13,4)#15
+addP('sauce',Kart_2()   ,8,advisor1,advisor1,13,4)#16
+addP('sauce',Yuehs_271(),8,advisor2,advisor3,-0,2)#17 no Endgame
+addP('sauce',Kart()     ,8,advisor1,advisor1,-0,2)#18
+addP('sauce',Kart_2()   ,8,advisor1,advisor1,-0,2)#19
 
 players = [player[4], player[7]]
 if len(sys.argv)>=3:
@@ -58,6 +64,7 @@ playersWins = [0, 0]
 ALLstarttime = time.clock()
 showWins = 1
 swapPlayers = 1
+maxR = 100
 
 collectData_8_0 = 0
 collectData_8_1 = 0
@@ -71,6 +78,8 @@ for i in range(3,len(sys.argv)):
         collectData_8_1 = 1
     if sys.argv[i]=='-nsw':
         showWins = 0
+    if sys.argv[i][0:3]=='-m=' and sys.argv[i][3:].isdigit():
+        maxR = int(sys.argv[i][3:])
 
 collectData_8 = collectData_8_0 or collectData_8_1
 if collectData_6 and collectData_8:
@@ -94,7 +103,6 @@ if collectData_8_1 == True:
 if collectData_6 == True:
     ff[2]=open('./cw6_271_BLACK.txt', 'a')
     ff[3]=open('./cw6_271_WHITE.txt', 'a')
-maxR = 10
 round = 0
 print 'start fight'
 while round < maxR:
